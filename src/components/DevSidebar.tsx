@@ -28,12 +28,16 @@ export function DevSidebar({
   settings,
   onChange,
   disabled,
+  tracing,
+  tracingProject,
 }: {
   open: boolean;
   onClose: () => void;
   settings: RunSettings;
   onChange: (s: RunSettings) => void;
   disabled: boolean;
+  tracing: boolean;
+  tracingProject: string;
 }) {
   return (
     <>
@@ -121,6 +125,38 @@ export function DevSidebar({
                   }
                 />
               ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
+              Observability
+            </p>
+            <div className="flex items-start gap-2 rounded-lg border border-hairline bg-page p-3 text-xs leading-relaxed">
+              <span
+                aria-hidden
+                className={`mt-1 size-2 shrink-0 rounded-full ${
+                  tracing ? "bg-[var(--series-baseline)]" : "bg-axis"
+                }`}
+              />
+              {tracing ? (
+                <p className="text-ink-2">
+                  <span className="font-semibold text-ink">
+                    LangSmith tracing on
+                  </span>{" "}
+                  — every run and gate decision is traced to project{" "}
+                  <span className="font-mono">{tracingProject}</span>.
+                </p>
+              ) : (
+                <p className="text-ink-2">
+                  <span className="font-semibold text-ink">
+                    LangSmith tracing off
+                  </span>{" "}
+                  — set <span className="font-mono">LANGSMITH_TRACING</span>{" "}
+                  and <span className="font-mono">LANGSMITH_API_KEY</span> in{" "}
+                  <span className="font-mono">.env.local</span> and restart.
+                </p>
+              )}
             </div>
           </div>
 

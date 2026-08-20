@@ -59,6 +59,7 @@ load_change → run_traces → run_evals → analyze → gate (interrupt)
 | **Medium #7** — multi-model support | Model picker (OpenAI / Anthropic / Google via OpenRouter) |
 | **Medium #8** — security guard, settings vs UX | Ship refused on failed evals unless explicitly overridden (and the override is logged); model/temperature/tools live in a **dev** sidebar |
 | **Easy #4** — model settings as controls | Temperature slider + model select |
+| **Hard #2** — LLM observability | LangSmith tracing of every run and gate decision (see below) |
 | **Hard #3 (shape)** — eval report | The per-case eval report with judge reasoning *is* the product |
 
 ## Demo (what a reviewer should see in 90 seconds)
@@ -83,6 +84,21 @@ npm run dev                  # http://localhost:3000
 ```
 
 Runtime state lives in `./data` (gitignored): the live prompt, the failing-case memory and the ship/revert audit log.
+
+### LangSmith observability (Hard optional #2)
+
+Uncomment the `LANGSMITH_*` block in `.env.local` (key from
+[smith.langchain.com](https://smith.langchain.com)) and restart. The dev
+sidebar shows a **LangSmith tracing on** indicator when it's active.
+
+Every canary run lands in LangSmith as a single `canary-run` trace: the full
+graph (`load_change → run_traces → run_evals → analyze → gate`), each
+baseline/candidate model call, every judge call with its structured scores,
+and the analyst's tool-calling loop. Resuming the gate produces a
+`canary-decision` trace tagged with the human's decision, so a shipped
+override is auditable end to end. Traces carry the `threadId`, model and
+demo-mode flag as metadata; runs are flushed to LangSmith before the API
+route returns, so nothing is lost on serverless deploys.
 
 **Submission repo:** push this project to [TuringCollegeSubmissions/gaurat-AE.AFA.4.6](https://github.com/TuringCollegeSubmissions/gaurat-AE.AFA.4.6).
 

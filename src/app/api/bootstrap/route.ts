@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { readCurrentPrompt } from "@/lib/agent/store";
-import { DEFAULT_MODEL, isMockMode } from "@/lib/env";
+import {
+  DEFAULT_MODEL,
+  isMockMode,
+  isTracingEnabled,
+  tracingProject,
+} from "@/lib/env";
 import { GOLDEN_SET } from "@/lib/toy-app/golden";
 import { PLANTED_REGRESSION_PROMPT } from "@/lib/toy-app/policy";
 
@@ -14,5 +19,7 @@ export async function GET() {
     goldenSet: GOLDEN_SET,
     defaultModel: DEFAULT_MODEL,
     mock: isMockMode(),
+    tracing: isTracingEnabled(),
+    tracingProject: tracingProject(),
   });
 }

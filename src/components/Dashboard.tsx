@@ -21,6 +21,8 @@ interface Bootstrap {
   goldenSet: { id: string }[];
   defaultModel: string;
   mock: boolean;
+  tracing: boolean;
+  tracingProject: string;
 }
 
 type Phase = "loading" | "idle" | "running" | "deciding";
@@ -204,6 +206,8 @@ export function Dashboard() {
         settings={settings}
         onChange={setSettings}
         disabled={running || deciding}
+        tracing={boot.tracing}
+        tracingProject={boot.tracingProject}
       />
     </div>
   );

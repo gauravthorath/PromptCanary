@@ -2,6 +2,7 @@ import { Command } from "@langchain/langgraph";
 import { NextRequest, NextResponse } from "next/server";
 import { getGraph } from "@/lib/agent/graph";
 import { buildReport, errorReport } from "@/lib/agent/report";
+import { flushTraces } from "@/lib/tracing";
 import type { Decision } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -22,10 +23,15 @@ export async function POST(req: NextRequest) {
     const graph = getGraph();
     await graph.invoke(new Command({ resume: decision }), {
       configurable: { thread_id: threadId },
+      runName: "canary-decision",
+      tags: ["canary"],
+      metadata: { threadId, decision },
     });
     return NextResponse.json(await buildReport(threadId));
   } catch (err) {
     console.error("[canary] decide failed:", err);
     return NextResponse.json(errorReport(threadId, err), { status: 500 });
+  } finally {
+    await flushTraces();
   }
 }

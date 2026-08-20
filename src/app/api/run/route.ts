@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGraph } from "@/lib/agent/graph";
 import { buildReport, errorReport } from "@/lib/agent/report";
-import { DEFAULT_MODEL } from "@/lib/env";
+import { DEFAULT_MODEL, isMockMode } from "@/lib/env";
+import { flushTraces } from "@/lib/tracing";
 import { DEFAULT_TOOL_FLAGS, type ToolFlags } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -28,21 +29,29 @@ export async function POST(req: NextRequest) {
       throw new Error("Candidate prompt is too long (max 8000 characters).");
     }
 
+    const model = body.model?.trim() || DEFAULT_MODEL;
     const graph = getGraph();
     await graph.invoke(
       {
         threadId,
         candidatePrompt,
-        model: body.model?.trim() || DEFAULT_MODEL,
+        model,
         temperature: clamp(body.temperature ?? 0.2, 0, 2),
         toolFlags: { ...DEFAULT_TOOL_FLAGS, ...body.tools },
       },
-      { configurable: { thread_id: threadId } },
+      {
+        configurable: { thread_id: threadId },
+        runName: "canary-run",
+        tags: ["canary"],
+        metadata: { threadId, model, mock: isMockMode() },
+      },
     );
     return NextResponse.json(await buildReport(threadId));
   } catch (err) {
     console.error("[canary] run failed:", err);
     return NextResponse.json(errorReport(threadId, err), { status: 500 });
+  } finally {
+    await flushTraces();
   }
 }
 

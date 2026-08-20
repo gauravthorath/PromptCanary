@@ -13,3 +13,19 @@ export function apiKey(): string | undefined {
 export function isMockMode(): boolean {
   return !apiKey();
 }
+
+/**
+ * LangSmith observability (Hard optional #2). LangChain picks the env vars
+ * up on its own; this helper only exists so the API layer can report the
+ * status to the UI and know when flushing traces is worth awaiting.
+ */
+export function isTracingEnabled(): boolean {
+  const flag = process.env.LANGSMITH_TRACING?.trim().toLowerCase();
+  return (
+    (flag === "true" || flag === "1") && !!process.env.LANGSMITH_API_KEY?.trim()
+  );
+}
+
+export function tracingProject(): string {
+  return process.env.LANGSMITH_PROJECT?.trim() || "default";
+}
