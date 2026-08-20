@@ -100,6 +100,13 @@ override is auditable end to end. Traces carry the `threadId`, model and
 demo-mode flag as metadata; runs are flushed to LangSmith before the API
 route returns, so nothing is lost on serverless deploys.
 
+The outcome is also logged as LangSmith **feedback**: `verdict` (score 1 =
+pass, 0 = fail, with the regressed case ids) on every `canary-run`, and
+`human_decision` (ship / override / revert, including guard refusals) on
+every `canary-decision`. That makes failed runs and override ships
+filterable and chartable in LangSmith Monitoring instead of buried inside
+trace payloads.
+
 **Submission repo:** push this project to [TuringCollegeSubmissions/gaurat-AE.AFA.4.6](https://github.com/TuringCollegeSubmissions/gaurat-AE.AFA.4.6).
 
 ## Use cases

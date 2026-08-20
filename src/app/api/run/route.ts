@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getGraph } from "@/lib/agent/graph";
 import { buildReport, errorReport } from "@/lib/agent/report";
 import { DEFAULT_MODEL, isMockMode } from "@/lib/env";
-import { flushTraces } from "@/lib/tracing";
+import { flushTraces, logVerdictFeedback } from "@/lib/tracing";
 import { DEFAULT_TOOL_FLAGS, type ToolFlags } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     const model = body.model?.trim() || DEFAULT_MODEL;
+    const runId = crypto.randomUUID();
     const graph = getGraph();
     await graph.invoke(
       {
@@ -41,12 +42,19 @@ export async function POST(req: NextRequest) {
       },
       {
         configurable: { thread_id: threadId },
+        runId,
         runName: "canary-run",
         tags: ["canary"],
         metadata: { threadId, model, mock: isMockMode() },
       },
     );
-    return NextResponse.json(await buildReport(threadId));
+    const report = await buildReport(threadId);
+    await logVerdictFeedback(
+      runId,
+      report.verdict,
+      report.results.filter((r) => r.regressed).map((r) => r.caseId),
+    );
+    return NextResponse.json(report);
   } catch (err) {
     console.error("[canary] run failed:", err);
     return NextResponse.json(errorReport(threadId, err), { status: 500 });
