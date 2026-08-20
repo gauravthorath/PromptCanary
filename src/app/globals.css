@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — validated data-viz reference palette.
+ * Light is the base; dark redefines the same roles under prefers-color-scheme.
+ */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --hairline: rgba(11, 11, 11, 0.1);
+  --series-baseline: #2a78d6; /* categorical slot 1: blue  = live prompt   */
+  --series-candidate: #eb6834; /* categorical slot 2: orange = candidate   */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-critical: #d03b3b;
+  --delta-up: #006300; /* success text on light surface */
+  --delta-down: #d03b3b;
+  --wash: rgba(11, 11, 11, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --hairline: rgba(255, 255, 255, 0.1);
+    --series-baseline: #3987e5;
+    --series-candidate: #d95926;
+    --status-good: #0ca30c;
+    --status-warning: #fab219;
+    --status-critical: #d03b3b;
+    --delta-up: #0ca30c;
+    --delta-down: #e66767;
+    --wash: rgba(255, 255, 255, 0.06);
+  }
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-grid: var(--grid);
+  --color-axis: var(--axis);
+  --color-hairline: var(--hairline);
+  --color-baseline-s: var(--series-baseline);
+  --color-candidate-s: var(--series-candidate);
+  --color-good: var(--status-good);
+  --color-warn: var(--status-warning);
+  --color-critical: var(--status-critical);
+  --color-delta-up: var(--delta-up);
+  --color-delta-down: var(--delta-down);
+  --color-wash: var(--wash);
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: color-mix(in oklab, var(--series-baseline) 25%, transparent);
+}
