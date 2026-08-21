@@ -9,12 +9,14 @@ import {
 import { DEFAULT_MODEL } from "../env";
 import { analyzeRun } from "./analyst";
 import { traceGoldenSet } from "./evals";
+import { checkPromptSafety } from "./prompt-guard";
 import { getRunContext, initRunContext } from "./registry";
 import { readCurrentPrompt } from "./store";
 import { assertToolEnabled, makeTools } from "./tools";
 import {
   DEFAULT_TOOL_FLAGS,
   type Decision,
+  type PromptSafety,
   type RunStatus,
   type ToolFlags,
   type Verdict,
@@ -45,6 +47,12 @@ const CanaryState = Annotation.Root({
   baselineModel: Annotation<string>({
     reducer: (_, next) => next,
     default: () => "",
+  }),
+  // Injection screen of the candidate prompt (OWASP LLM01); flagged runs
+  // still execute, but the gate refuses a plain ship on them.
+  promptSafety: Annotation<PromptSafety | null>({
+    reducer: (_, next) => next,
+    default: () => null,
   }),
   temperature: Annotation<number>({
     reducer: (_, next) => next,
@@ -87,8 +95,12 @@ async function loadChange(state: State) {
     throw new Error("Candidate prompt is empty — nothing to test.");
   }
   const currentPrompt = await readCurrentPrompt();
+  const promptSafety = await checkPromptSafety(
+    state.candidatePrompt,
+    state.model,
+  );
   initRunContext(state.threadId, currentPrompt, state.candidatePrompt);
-  return { currentPrompt, guardMessage: null, decision: null };
+  return { currentPrompt, promptSafety, guardMessage: null, decision: null };
 }
 
 async function runTraces(state: State) {
@@ -137,6 +149,12 @@ function gate(state: State) {
       decision: null,
       guardMessage:
         "Guard refused: evals did not pass. Revert, re-run, or ship with an explicit override.",
+    };
+  }
+  if (decision === "ship" && state.promptSafety?.flagged) {
+    return {
+      decision: null,
+      guardMessage: `Guard refused: the candidate prompt has ${state.promptSafety.findings.length} safety finding(s), injection risk ${state.promptSafety.risk.toFixed(2)}. Review them; only an explicit override ships.`,
     };
   }
   if (

@@ -1,7 +1,7 @@
 import { isMockMode } from "../env";
 import { getGraph } from "./graph";
 import { getRunContext } from "./registry";
-import type { RunReport, RunStatus, Verdict } from "../types";
+import type { PromptSafety, RunReport, RunStatus, Verdict } from "../types";
 
 /** Assemble the UI-facing report from the graph checkpoint + run context. */
 export async function buildReport(threadId: string): Promise<RunReport> {
@@ -16,6 +16,7 @@ export async function buildReport(threadId: string): Promise<RunReport> {
     status?: RunStatus;
     model?: string;
     runCount?: number;
+    promptSafety?: PromptSafety | null;
   };
   const ctx = getRunContext(threadId);
   const paused = snapshot.next.length > 0;
@@ -27,6 +28,7 @@ export async function buildReport(threadId: string): Promise<RunReport> {
     results: ctx.results,
     summary: values.summary ?? "",
     guardMessage: values.guardMessage ?? null,
+    promptSafety: values.promptSafety ?? null,
     error: null,
     mock: isMockMode(),
     model: values.model ?? "",
@@ -42,6 +44,7 @@ export function errorReport(threadId: string, error: unknown): RunReport {
     results: [],
     summary: "",
     guardMessage: null,
+    promptSafety: null,
     error: error instanceof Error ? error.message : String(error),
     mock: isMockMode(),
     model: "",

@@ -1,7 +1,13 @@
 import { awaitAllCallbacks } from "@langchain/core/callbacks/promises";
 import { Client } from "langsmith";
 import { isTracingEnabled } from "./env";
-import type { CaseResult, Decision, RunStatus, Verdict } from "./types";
+import type {
+  CaseResult,
+  Decision,
+  PromptSafety,
+  RunStatus,
+  Verdict,
+} from "./types";
 
 let client: Client | null = null;
 
@@ -36,6 +42,7 @@ export async function logVerdictFeedback(
   runId: string,
   verdict: Verdict | null,
   results: CaseResult[],
+  promptSafety: PromptSafety | null = null,
 ): Promise<void> {
   if (!isTracingEnabled() || !verdict) return;
   const regressed = results.filter((r) => r.regressed).map((r) => r.caseId);
@@ -59,6 +66,13 @@ export async function logVerdictFeedback(
       }),
       getClient().createFeedback(runId, "correctness", {
         score: mean((r) => r.candidate.scores.correctness),
+      }),
+      // Injection screen of the candidate prompt: 1 = clean, 0 = flagged.
+      getClient().createFeedback(runId, "prompt_safety", {
+        score: promptSafety?.flagged ? 0 : 1,
+        comment: promptSafety?.findings.length
+          ? promptSafety.findings.map((f) => f.message).join(" · ")
+          : undefined,
       }),
     ]);
   } catch (err) {

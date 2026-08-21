@@ -29,6 +29,7 @@ load_change → run_traces → run_evals → analyze → gate (interrupt)
 - **run_evals** scores each answer with an LLM judge (faithfulness + correctness, structured output) and flags regressions (delta ≤ −0.15 or score < 0.6).
 - **analyze** is a function-calling analyst: it can call `get_trace` and `diff_prompt` to explain *what got worse and why*.
 - **gate** interrupts the graph. Nothing ships without a human decision, and a **security guard refuses a plain "ship" while evals are failing** — only an explicit recorded override gets through.
+- **prompt-safety screen** (OWASP LLM01 mitigations): before tracing, the candidate prompt itself is checked by a deterministic lint (instruction override, role hijack, destructive imperatives, exfiltration, obfuscated payloads) plus an LLM review at temperature 0. Findings never skip the evals — behavior is still measured — they *taint* the run: the gate refuses a plain Ship and only a logged override ships. Tone or grounding changes are deliberately not flagged; the eval suite owns behavior. Prompt injection has no complete fix — this is layered mitigation, and the fail-closed gate stays the real guard.
 
 ## Features → course requirements
 
@@ -108,7 +109,9 @@ The outcome is also logged as LangSmith **feedback**: `verdict` (score 1 =
 pass, 0 = fail, with the regressed case ids) plus mean candidate
 `faithfulness`/`correctness` on every `canary-run`, and `human_decision`
 (ship / override / revert, including guard refusals) on every
-`canary-decision`. That makes failed runs and override ships filterable
+`canary-decision`, and `prompt_safety` (1 = clean, 0 = flagged, with the
+findings as the comment) on every `canary-run`. That makes failed runs,
+flagged prompts and override ships filterable
 and chartable in LangSmith Monitoring instead of buried inside trace
 payloads.
 

@@ -56,6 +56,21 @@ export const DEFAULT_TOOL_FLAGS: ToolFlags = {
   mark_shipped: true,
 };
 
+export interface PromptFinding {
+  category: string;
+  message: string;
+  source: "lint" | "review";
+}
+
+/** Injection screen of the candidate prompt (OWASP LLM01 mitigations). */
+export interface PromptSafety {
+  /** 0–1; max of the lint layer and the LLM review. */
+  risk: number;
+  /** True → the gate refuses a plain ship; an explicit override is required. */
+  flagged: boolean;
+  findings: PromptFinding[];
+}
+
 export type RunStatus =
   | "awaiting_decision"
   | "shipped"
@@ -72,6 +87,8 @@ export interface RunReport {
   summary: string;
   /** Message from the security guard when a ship attempt was refused. */
   guardMessage: string | null;
+  /** Injection screen of the candidate prompt; null on error reports. */
+  promptSafety: PromptSafety | null;
   error: string | null;
   mock: boolean;
   model: string;

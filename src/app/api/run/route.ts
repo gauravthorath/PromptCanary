@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getGraph } from "@/lib/agent/graph";
 import { buildReport, errorReport } from "@/lib/agent/report";
 import { DEFAULT_MODEL, isMockMode } from "@/lib/env";
@@ -58,7 +59,12 @@ export async function POST(req: NextRequest) {
       },
     );
     const report = await buildReport(threadId);
-    await logVerdictFeedback(runId, report.verdict, report.results);
+    await logVerdictFeedback(
+      runId,
+      report.verdict,
+      report.results,
+      report.promptSafety,
+    );
     return NextResponse.json(report);
   } catch (err) {
     console.error("[canary] run failed:", err);

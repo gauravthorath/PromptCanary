@@ -1,5 +1,6 @@
 import { Command } from "@langchain/langgraph";
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getGraph } from "@/lib/agent/graph";
 import { buildReport, errorReport } from "@/lib/agent/report";
 import { flushTraces, logDecisionFeedback } from "@/lib/tracing";

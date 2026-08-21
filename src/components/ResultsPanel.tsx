@@ -4,7 +4,12 @@ import { useState } from "react";
 import { CaseTable } from "./CaseTable";
 import { ScoreChart } from "./ScoreChart";
 import { Button, Card, Spinner } from "./ui";
-import type { Decision, MetricKey, RunReport } from "@/lib/types";
+import type {
+	Decision,
+	MetricKey,
+	PromptSafety,
+	RunReport,
+} from "@/lib/types";
 
 export function ResultsPanel({
   report,
@@ -21,11 +26,16 @@ export function ResultsPanel({
 }) {
   const { results, verdict } = report;
   const failed = verdict === "fail";
+  const safetyFlagged = Boolean(report.promptSafety?.flagged);
   const awaiting = report.status === "awaiting_decision";
 
   return (
     <div className="flex flex-col gap-4">
       <VerdictBanner report={report} />
+
+      {report.promptSafety?.flagged && (
+        <PromptSafetyCard safety={report.promptSafety} />
+      )}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <StatTile
@@ -59,7 +69,7 @@ export function ResultsPanel({
 
       {awaiting && (
         <HitlBar
-          failed={failed}
+          blocked={failed || safetyFlagged}
           deciding={deciding}
           onDecide={onDecide}
           revertEnabled={revertEnabled}
@@ -199,14 +209,39 @@ function RegressedTile({ results }: { results: RunReport["results"] }) {
   );
 }
 
+/** Injection screen findings (OWASP LLM01): the run still executed, but a plain Ship is refused. */
+function PromptSafetyCard({ safety }: { safety: PromptSafety }) {
+  return (
+    <div className="rounded-xl border border-warn/50 bg-warn/10 p-4">
+      <p className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink-2">
+        Prompt safety — injection risk {safety.risk.toFixed(2)}
+      </p>
+      <ul className="mt-2 space-y-1.5">
+        {safety.findings.map((f, i) => (
+          <li key={`${f.category}-${i}`} className="text-sm text-ink">
+            <span className="mr-2 rounded-full border border-hairline bg-surface px-2 py-0.5 font-mono text-[11px] text-ink-2">
+              {f.source === "lint" ? "lint" : "review"} · {f.category}
+            </span>
+            {f.message}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-xs text-ink-2">
+        Findings never skip the evals — behavior is still measured — but a
+        plain Ship is refused; only a logged override ships.
+      </p>
+    </div>
+  );
+}
+
 function HitlBar({
-  failed,
+  blocked,
   deciding,
   onDecide,
   revertEnabled,
   shipEnabled,
 }: {
-  failed: boolean;
+  blocked: boolean;
   deciding: boolean;
   onDecide: (d: Decision) => void;
   revertEnabled: boolean;
@@ -228,7 +263,8 @@ function HitlBar({
       {confirmOverride ? (
         <div className="flex flex-wrap items-center gap-2">
           <p className="mr-2 text-sm text-delta-down">
-            Ship despite failing evals? This is recorded as an override.
+            Ship despite the gate&apos;s objections? This is recorded as an
+            override.
           </p>
           <Button
             variant="danger"
@@ -246,7 +282,7 @@ function HitlBar({
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {failed ? (
+          {blocked ? (
             <>
               <Button
                 variant="danger"

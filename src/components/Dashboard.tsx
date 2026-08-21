@@ -266,6 +266,7 @@ function networkError(threadId: string, err: unknown): RunReport {
     results: [],
     summary: "",
     guardMessage: null,
+    promptSafety: null,
     error: err instanceof Error ? err.message : "Network error",
     mock: false,
     model: "",
