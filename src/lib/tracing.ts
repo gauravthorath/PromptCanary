@@ -1,7 +1,7 @@
 import { awaitAllCallbacks } from "@langchain/core/callbacks/promises";
 import { Client } from "langsmith";
 import { isTracingEnabled } from "./env";
-import type { Decision, RunStatus, Verdict } from "./types";
+import type { CaseResult, Decision, RunStatus, Verdict } from "./types";
 
 let client: Client | null = null;
 
@@ -35,17 +35,32 @@ export async function flushTraces(): Promise<void> {
 export async function logVerdictFeedback(
   runId: string,
   verdict: Verdict | null,
-  regressedCases: string[],
+  results: CaseResult[],
 ): Promise<void> {
   if (!isTracingEnabled() || !verdict) return;
+  const regressed = results.filter((r) => r.regressed).map((r) => r.caseId);
+  const mean = (pick: (r: CaseResult) => number) =>
+    results.length
+      ? results.reduce((sum, r) => sum + pick(r), 0) / results.length
+      : 0;
   try {
-    await getClient().createFeedback(runId, "verdict", {
-      score: verdict === "pass" ? 1 : 0,
-      value: verdict,
-      comment: regressedCases.length
-        ? `regressed: ${regressedCases.join(", ")}`
-        : undefined,
-    });
+    await Promise.all([
+      getClient().createFeedback(runId, "verdict", {
+        score: verdict === "pass" ? 1 : 0,
+        value: verdict,
+        comment: regressed.length
+          ? `regressed: ${regressed.join(", ")}`
+          : undefined,
+      }),
+      // Mean candidate scores across the golden set, so quality is
+      // chartable over time in Monitoring, not only pass/fail.
+      getClient().createFeedback(runId, "faithfulness", {
+        score: mean((r) => r.candidate.scores.faithfulness),
+      }),
+      getClient().createFeedback(runId, "correctness", {
+        score: mean((r) => r.candidate.scores.correctness),
+      }),
+    ]);
   } catch (err) {
     console.warn("[canary] failed to log verdict feedback:", err);
   }

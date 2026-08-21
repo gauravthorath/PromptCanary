@@ -49,11 +49,7 @@ export async function POST(req: NextRequest) {
       },
     );
     const report = await buildReport(threadId);
-    await logVerdictFeedback(
-      runId,
-      report.verdict,
-      report.results.filter((r) => r.regressed).map((r) => r.caseId),
-    );
+    await logVerdictFeedback(runId, report.verdict, report.results);
     return NextResponse.json(report);
   } catch (err) {
     console.error("[canary] run failed:", err);
