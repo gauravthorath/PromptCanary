@@ -97,6 +97,8 @@ export interface DecisionRecord {
 
 export interface RunSettings {
   model: string;
+  /** Model for baseline answers; "" runs baseline on `model` (prompt-only A/B). */
+  baselineModel: string;
   temperature: number;
   tools: ToolFlags;
 }

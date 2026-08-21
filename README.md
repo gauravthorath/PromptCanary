@@ -56,7 +56,7 @@ load_change → run_traces → run_evals → analyze → gate (interrupt)
 |---|---|
 | **Medium #2** — short + long-term memory | Checkpointer + failing-case store (`src/lib/agent/store.ts`) |
 | **Medium #6** — 5 tools, enable/disable in UI | `run_evals`, `get_trace`, `diff_prompt`, `revert_prompt`, `mark_shipped` (`src/lib/agent/tools.ts`), toggles in the dev sidebar |
-| **Medium #7** — multi-model support | Model picker (OpenAI / Anthropic / Google via OpenRouter) |
+| **Medium #7** — multi-model support | Model picker (OpenAI / Anthropic / Google via OpenRouter); optional **baseline model** for a model A/B — baseline answers on the old model, candidate on the new, same golden set |
 | **Medium #8** — security guard, settings vs UX | Ship refused on failed evals unless explicitly overridden (and the override is logged); model/temperature/tools live in a **dev** sidebar |
 | **Easy #4** — model settings as controls | Temperature slider + model select |
 | **Hard #2** — LLM observability | LangSmith tracing of every run and gate decision (see below) |

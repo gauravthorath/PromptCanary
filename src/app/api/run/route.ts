@@ -12,6 +12,7 @@ interface RunBody {
   threadId?: string;
   candidatePrompt?: string;
   model?: string;
+  baselineModel?: string;
   temperature?: number;
   tools?: Partial<ToolFlags>;
 }
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     const model = body.model?.trim() || DEFAULT_MODEL;
+    const baselineModel = body.baselineModel?.trim() || "";
     const runId = crypto.randomUUID();
     const graph = getGraph();
     await graph.invoke(
@@ -37,6 +39,7 @@ export async function POST(req: NextRequest) {
         threadId,
         candidatePrompt,
         model,
+        baselineModel,
         temperature: clamp(body.temperature ?? 0.2, 0, 2),
         toolFlags: { ...DEFAULT_TOOL_FLAGS, ...body.tools },
       },
@@ -45,7 +48,13 @@ export async function POST(req: NextRequest) {
         runId,
         runName: "canary-run",
         tags: ["canary"],
-        metadata: { threadId, model, mock: isMockMode() },
+        metadata: {
+          threadId,
+          model,
+          baselineModel: baselineModel || model,
+          modelAB: Boolean(baselineModel) && baselineModel !== model,
+          mock: isMockMode(),
+        },
       },
     );
     const report = await buildReport(threadId);

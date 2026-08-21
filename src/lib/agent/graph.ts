@@ -40,6 +40,12 @@ const CanaryState = Annotation.Root({
     reducer: (_, next) => next,
     default: () => DEFAULT_MODEL,
   }),
+  // Model A/B: baseline answers run on this model; "" = same as `model`,
+  // so the delta isolates the prompt change instead of the model change.
+  baselineModel: Annotation<string>({
+    reducer: (_, next) => next,
+    default: () => "",
+  }),
   temperature: Annotation<number>({
     reducer: (_, next) => next,
     default: () => 0.2,
@@ -92,6 +98,7 @@ async function runTraces(state: State) {
     state.candidatePrompt,
     state.model,
     state.temperature,
+    state.baselineModel?.trim() || state.model,
   );
   ctx.runCount += 1;
   return { runCount: ctx.runCount, guardMessage: null, decision: null };

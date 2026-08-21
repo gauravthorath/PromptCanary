@@ -85,6 +85,33 @@ export function DevSidebar({
           </div>
 
           <div>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted">
+              Baseline model (A/B)
+            </label>
+            <select
+              value={settings.baselineModel}
+              onChange={(e) =>
+                onChange({ ...settings, baselineModel: e.target.value })
+              }
+              disabled={disabled}
+              className="w-full rounded-lg border border-hairline bg-page px-3 py-2 font-mono text-xs text-ink outline-none focus:border-accent"
+            >
+              <option value="">same as model above (prompt A/B)</option>
+              {MODELS.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted">
+              Set this to test a model change: baseline answers run on this
+              model, candidate answers on the model above — keep the candidate
+              prompt identical to the live prompt so the delta isolates the
+              model swap.
+            </p>
+          </div>
+
+          <div>
             <label className="mb-1.5 flex justify-between text-xs font-semibold uppercase tracking-wide text-muted">
               <span>Temperature</span>
               <span className="tabular-nums text-ink">

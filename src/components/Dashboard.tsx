@@ -32,6 +32,7 @@ export function Dashboard() {
   const [candidate, setCandidate] = useState("");
   const [settings, setSettings] = useState<RunSettings>({
     model: "",
+    baselineModel: "",
     temperature: 0.2,
     tools: { ...DEFAULT_TOOL_FLAGS },
   });
@@ -79,6 +80,7 @@ export function Dashboard() {
           threadId: id,
           candidatePrompt: candidate,
           model: settings.model,
+          baselineModel: settings.baselineModel,
           temperature: settings.temperature,
           tools: settings.tools,
         }),

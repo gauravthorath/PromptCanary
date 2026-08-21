@@ -22,6 +22,7 @@ export async function traceGoldenSet(
   candidatePrompt: string,
   model: string,
   temperature: number,
+  baselineModel: string = model,
 ): Promise<Trace[]> {
   if (GOLDEN_SET.length === 0) {
     throw new Error(
@@ -30,7 +31,7 @@ export async function traceGoldenSet(
   }
   return Promise.all(
     GOLDEN_SET.flatMap((gc) => [
-      runToyApp(currentPrompt, gc, "baseline", model, temperature),
+      runToyApp(currentPrompt, gc, "baseline", baselineModel, temperature),
       runToyApp(candidatePrompt, gc, "candidate", model, temperature),
     ]),
   );
