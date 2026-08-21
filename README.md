@@ -101,11 +101,20 @@ demo-mode flag as metadata; runs are flushed to LangSmith before the API
 route returns, so nothing is lost on serverless deploys.
 
 The outcome is also logged as LangSmith **feedback**: `verdict` (score 1 =
-pass, 0 = fail, with the regressed case ids) on every `canary-run`, and
-`human_decision` (ship / override / revert, including guard refusals) on
-every `canary-decision`. That makes failed runs and override ships
-filterable and chartable in LangSmith Monitoring instead of buried inside
-trace payloads.
+pass, 0 = fail, with the regressed case ids) plus mean candidate
+`faithfulness`/`correctness` on every `canary-run`, and `human_decision`
+(ship / override / revert, including guard refusals) on every
+`canary-decision`. That makes failed runs and override ships filterable
+and chartable in LangSmith Monitoring instead of buried inside trace
+payloads.
+
+| The full graph as one trace | The judge catching the regression |
+|---|---|
+| ![canary-run trace tree](docs/langsmith-trace-tree.png) | ![judge call scoring the out-of-scope candidate](docs/langsmith-judge-call.png) |
+
+| Run-level feedback, filterable | The human decision, audited |
+|---|---|
+| ![verdict and score feedback on a canary-run](docs/langsmith-feedback.png) | ![canary-decision resuming the gate into do_revert](docs/langsmith-decision.png) |
 
 **Submission repo:** push this project to [TuringCollegeSubmissions/gaurat-AE.AFA.4.6](https://github.com/TuringCollegeSubmissions/gaurat-AE.AFA.4.6).
 
