@@ -120,6 +120,10 @@ payloads.
 |---|---|
 | ![verdict and score feedback on a canary-run](docs/langsmith-feedback.png) | ![canary-decision resuming the gate into do_revert](docs/langsmith-decision.png) |
 
+A model A/B run in the same trace view: the graph state carries `baselineModel` next to `model`, and the calls under `run_traces` alternate between the two — baseline answers on `openai/gpt-4.1-mini`, candidate answers on `anthropic/claude-haiku-4.5`. The root run's metadata records `baselineModel` and `modelAB: true`, so model-swap runs are filterable like any other slice.
+
+![model A/B trace — baselineModel and model in the graph state, alternating model chips under run_traces](docs/langsmith-model-ab.png)
+
 **Submission repo:** push this project to [TuringCollegeSubmissions/gaurat-AE.AFA.4.6](https://github.com/TuringCollegeSubmissions/gaurat-AE.AFA.4.6).
 
 ## Use cases
