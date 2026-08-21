@@ -2,7 +2,7 @@
 
 import { diffWords } from "diff";
 import { useMemo, useState } from "react";
-import { Button, Card } from "./ui";
+import { Button, Card, CopyButton } from "./ui";
 
 export function PromptPanel({
   currentPrompt,
@@ -25,7 +25,10 @@ export function PromptPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      <Card title="Live prompt (baseline)">
+      <Card
+        title="Live prompt (baseline)"
+        action={<CopyButton text={currentPrompt} label="Copy live prompt" />}
+      >
         <pre className="max-h-40 overflow-y-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-ink-2">
           {currentPrompt}
         </pre>

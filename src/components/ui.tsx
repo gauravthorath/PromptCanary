@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export function Card({
   title,
@@ -54,6 +54,84 @@ export function Button({
       {...props}
       className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed ${buttonStyles[variant]} ${className}`}
     />
+  );
+}
+
+/** Icon button that copies `text` to the clipboard; flips to a check for 1.5s. */
+export function CopyButton({
+  text,
+  label = "Copy",
+}: {
+  text: string;
+  label?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard unavailable (permissions / insecure context) — do nothing.
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label={copied ? "Copied" : label}
+      title={copied ? "Copied" : label}
+      className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ink-2 transition-colors hover:bg-wash"
+    >
+      {copied ? (
+        <>
+          <svg viewBox="0 0 16 16" aria-hidden className="size-3.5">
+            <path
+              d="M2.5 8.5 6 12l7.5-8"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="text-delta-up">Copied</span>
+        </>
+      ) : (
+        <>
+          <svg viewBox="0 0 16 16" aria-hidden className="size-3.5">
+            <rect
+              x="5.5"
+              y="5.5"
+              width="8"
+              height="8"
+              rx="1.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+            />
+            <path
+              d="M10.5 3.5v-1a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+            />
+          </svg>
+          Copy
+        </>
+      )}
+    </button>
   );
 }
 
