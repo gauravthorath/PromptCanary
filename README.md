@@ -13,6 +13,10 @@ Built with **Next.js (App Router, TypeScript) + LangGraph.js**, for Turing Colle
 
 The bot under test is a bundled toy FAQ/policy bot ("Lumina Notes" support). PromptCanary runs a **forced** LangGraph path — not a `create_agent` hoping the model decides to call evals:
 
+![PromptCanary architecture — the forced eval path, the human gate, and the pluggable seam that adapts it to any LLM application](docs/architecture.svg)
+
+The dashed boundary (④) is the only application-specific code: swap the app-under-test runner, the golden set, and the metrics to point the same canary at a RAG pipeline, summarizer, extractor, SQL generator, or agent — the graph, gate, guard, memory and tracing are reused unchanged.
+
 ```
 load_change → run_traces → run_evals → analyze → gate (interrupt)
                   ▲                                │
