@@ -78,9 +78,9 @@ Requires **Node 20+** and an [OpenRouter API key](https://openrouter.ai/keys). W
 
 ```bash
 cd PromptCanary
-npm install
+pnpm install
 cp .env.example .env.local   # paste OPENROUTER_API_KEY
-npm run dev                  # http://localhost:3000
+pnpm dev                     # http://localhost:3000
 ```
 
 Runtime state lives in `./data` (gitignored): the live prompt, the failing-case memory and the ship/revert audit log.
