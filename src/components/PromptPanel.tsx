@@ -57,7 +57,7 @@ export function PromptPanel({
             rows={11}
             spellCheck={false}
             placeholder="Paste or write the new system prompt to test…"
-            className="w-full resize-y rounded-lg border border-hairline bg-page p-3 font-mono text-xs leading-relaxed text-ink outline-none focus:border-baseline-s disabled:opacity-60"
+            className="w-full resize-y rounded-lg border border-hairline bg-page p-3 font-mono text-xs leading-relaxed text-ink outline-none focus:border-accent disabled:opacity-60"
           />
         ) : (
           <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg border border-hairline bg-page p-3 font-mono text-xs leading-relaxed">

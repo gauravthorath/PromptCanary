@@ -74,7 +74,7 @@ export function DevSidebar({
               value={settings.model}
               onChange={(e) => onChange({ ...settings, model: e.target.value })}
               disabled={disabled}
-              className="w-full rounded-lg border border-hairline bg-page px-3 py-2 font-mono text-xs text-ink outline-none focus:border-baseline-s"
+              className="w-full rounded-lg border border-hairline bg-page px-3 py-2 font-mono text-xs text-ink outline-none focus:border-accent"
             >
               {MODELS.map((m) => (
                 <option key={m} value={m}>
@@ -101,7 +101,7 @@ export function DevSidebar({
               onChange={(e) =>
                 onChange({ ...settings, temperature: Number(e.target.value) })
               }
-              className="w-full accent-[var(--series-baseline)]"
+              className="w-full accent-[var(--accent)]"
             />
           </div>
 
@@ -136,7 +136,7 @@ export function DevSidebar({
               <span
                 aria-hidden
                 className={`mt-1 size-2 shrink-0 rounded-full ${
-                  tracing ? "bg-[var(--series-baseline)]" : "bg-axis"
+                  tracing ? "bg-good" : "bg-axis"
                 }`}
               />
               {tracing ? (

@@ -19,7 +19,7 @@ export function Card({
     >
       {(title || action) && (
         <header className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-2.5">
-          <h2 className="text-[13px] font-semibold tracking-wide text-ink-2 uppercase">
+          <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink-2">
             {title}
           </h2>
           {action}
@@ -34,7 +34,7 @@ type ButtonVariant = "primary" | "danger" | "subtle" | "ghost";
 
 const buttonStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-ink text-surface hover:opacity-85 disabled:opacity-40 border border-transparent",
+    "bg-accent text-accent-ink font-semibold hover:brightness-95 disabled:opacity-40 border border-black/15",
   danger:
     "bg-critical text-white hover:opacity-85 disabled:opacity-40 border border-transparent",
   subtle:
@@ -54,6 +54,20 @@ export function Button({
       {...props}
       className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed ${buttonStyles[variant]} ${className}`}
     />
+  );
+}
+
+/** Geometric canary in profile — tail, body, head, beak, eye. Inherits currentColor. */
+export function CanaryMark({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden className={className}>
+      <path d="M1.5 11.5 10 15.5l-5.5 4z" fill="currentColor" />
+      <circle cx="14" cy="18" r="9" fill="currentColor" />
+      <circle cx="21" cy="10" r="6" fill="currentColor" />
+      <path d="M26.5 7.5 32 10.2l-5.5 2.7z" fill="currentColor" />
+      <circle cx="23" cy="8.6" r="1.4" fill="var(--accent)" />
+      <path d="M12.5 27.2v2.8M16.5 27.2v2.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
   );
 }
 
@@ -141,7 +155,7 @@ export function Toggle({
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={`relative mt-0.5 h-5 w-9 shrink-0 rounded-full transition-colors ${
-          checked ? "bg-baseline-s" : "bg-axis"
+          checked ? "bg-accent" : "bg-axis"
         }`}
       >
         <span

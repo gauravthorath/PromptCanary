@@ -5,7 +5,7 @@ import { DevSidebar } from "./DevSidebar";
 import { MemoryPanel } from "./MemoryPanel";
 import { PromptPanel } from "./PromptPanel";
 import { ResultsPanel } from "./ResultsPanel";
-import { Button, Spinner } from "./ui";
+import { Button, CanaryMark, Spinner } from "./ui";
 import {
   DEFAULT_TOOL_FLAGS,
   type Decision,
@@ -122,15 +122,20 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-16 pt-6 sm:px-6">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-hairline pb-5">
         <div className="flex items-center gap-3">
-          <span aria-hidden className="text-2xl">🐤</span>
+          <span
+            aria-hidden
+            className="flex size-10 items-center justify-center rounded-lg bg-accent text-accent-ink"
+          >
+            <CanaryMark className="size-6" />
+          </span>
           <div>
             <h1 className="text-lg font-semibold tracking-tight text-ink">
               PromptCanary
             </h1>
-            <p className="text-xs text-muted">
-              Catches silent quality regressions before a prompt change ships
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted">
+              Regression gate for prompt changes
             </p>
           </div>
         </div>
@@ -191,7 +196,7 @@ export function Dashboard() {
       </div>
 
       <div className="mt-8">
-        <h2 className="mb-3 text-[13px] font-semibold uppercase tracking-wide text-ink-2">
+        <h2 className="mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink-2">
           Long-term memory
         </h2>
         <MemoryPanel
@@ -228,7 +233,7 @@ function EmptyState({ running }: { running: boolean }) {
         </>
       ) : (
         <>
-          <span aria-hidden className="text-3xl">🐤</span>
+          <CanaryMark className="size-14 text-axis" />
           <p className="max-w-sm text-sm text-ink-2">
             Edit the candidate prompt (or load the planted regression) and run
             the canary. Results, regressions and the ship/revert gate appear

@@ -12,7 +12,7 @@ export function CaseTable({ results }: { results: CaseResult[] }) {
     <div className="overflow-x-auto">
       <table className="w-full min-w-[560px] border-collapse text-sm">
         <thead>
-          <tr className="border-b border-hairline text-left text-xs uppercase tracking-wide text-muted">
+          <tr className="border-b border-hairline text-left font-mono text-[11px] uppercase tracking-[0.12em] text-muted">
             <th className="py-2 pr-3 font-medium">Golden case</th>
             <th className="py-2 pr-3 font-medium">Faithfulness</th>
             <th className="py-2 pr-3 font-medium">Correctness</th>

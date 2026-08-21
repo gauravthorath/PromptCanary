@@ -22,6 +22,8 @@
   --delta-up: #006300; /* success text on light surface */
   --delta-down: #d03b3b;
   --wash: rgba(11, 11, 11, 0.04);
+  --accent: #e8b400; /* canary yellow — brand + gate actions, always with ink text */
+  --accent-ink: #0b0b0b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -43,6 +45,8 @@
     --delta-up: #0ca30c;
     --delta-down: #e66767;
     --wash: rgba(255, 255, 255, 0.06);
+    --accent: #f5c518;
+    --accent-ink: #0b0b0b;
   }
 }
 
@@ -63,8 +67,10 @@
   --color-delta-up: var(--delta-up);
   --color-delta-down: var(--delta-down);
   --color-wash: var(--wash);
-  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --font-sans: var(--font-plex-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
 }
 
 body {
@@ -74,5 +80,28 @@ body {
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--series-baseline) 25%, transparent);
+  background: color-mix(in oklab, var(--accent) 45%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Hazard tape — the human gate's physical edge. */
+.hazard-stripe {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--accent) 0 10px,
+    var(--ink) 10px 20px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin {
+    animation-duration: 2.5s;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }
