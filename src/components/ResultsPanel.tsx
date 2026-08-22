@@ -83,10 +83,15 @@ export function ResultsPanel({
 /** Annunciator lamp: the gate's state at a glance — lamp block, panel label, plain-language line. */
 function VerdictBanner({ report }: { report: RunReport }) {
   const failed = report.verdict === "fail";
+  const safetyFlagged = Boolean(report.promptSafety?.flagged);
+  // Blocked, but by the prompt-safety screen rather than an eval regression.
+  const held = !failed && safetyFlagged;
   const done = report.status === "shipped" || report.status === "reverted";
   const lamp = failed
     ? { icon: "✕", panel: "Gate: regression", cls: "bg-critical text-white" }
-    : { icon: "✓", panel: "Gate: clear", cls: "bg-good text-white" };
+    : held
+      ? { icon: "!", panel: "Gate: held", cls: "bg-warn text-ink" }
+      : { icon: "✓", panel: "Gate: clear", cls: "bg-good text-white" };
   const text = done ? (
     <>
       Decision recorded:{" "}
@@ -99,15 +104,21 @@ function VerdictBanner({ report }: { report: RunReport }) {
     </>
   ) : failed ? (
     "The candidate made at least one golden case worse. Nothing ships without your approval."
+  ) : held ? (
+    "Evals passed, but the candidate prompt was flagged by the safety screen (see below). A plain ship is refused."
   ) : (
     "No golden case regressed. Waiting on your call."
   );
 
+  const tone = failed
+    ? "border-critical/40 bg-critical/5"
+    : held
+      ? "border-warn/50 bg-warn/10"
+      : "border-good/40 bg-good/5";
+
   return (
     <div
-      className={`flex flex-wrap items-center gap-4 rounded-xl border p-3 pr-4 ${
-        failed ? "border-critical/40 bg-critical/5" : "border-good/40 bg-good/5"
-      }`}
+      className={`flex flex-wrap items-center gap-4 rounded-xl border p-3 pr-4 ${tone}`}
     >
       <span
         aria-hidden
