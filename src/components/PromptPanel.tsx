@@ -29,7 +29,7 @@ export function PromptPanel({
 				title="Live prompt (baseline)"
 				action={<CopyButton text={currentPrompt} label="Copy live prompt" />}
 			>
-				<pre className="max-h-40 overflow-y-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-ink-2">
+				<pre className="max-h-72 overflow-y-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-ink-2">
 					{currentPrompt}
 				</pre>
 			</Card>
