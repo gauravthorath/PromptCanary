@@ -127,6 +127,10 @@ A model A/B run in the same trace view: the graph state carries `baselineModel` 
 
 ![model A/B trace — baselineModel and model in the graph state, alternating model chips under run_traces](docs/langsmith-model-ab.png)
 
+Because verdict, faithfulness, correctness and prompt_safety are logged as run-level **feedback**, quality is chartable over time — LangSmith's Monitoring → Feedback Scores tab does this natively. The chart below is rendered from the same feedback via the LangSmith API across 37 real canary runs: the lines stay pinned at 1.0 except on the runs that genuinely regressed, and the strip shows each run's pass/fail verdict.
+
+![quality over time — candidate faithfulness and correctness per canary run, with the pass/fail verdict strip, from LangSmith feedback](docs/langsmith-monitoring.svg)
+
 **Submission repo:** push this project to [TuringCollegeSubmissions/gaurat-AE.AFA.4.6](https://github.com/TuringCollegeSubmissions/gaurat-AE.AFA.4.6).
 
 ## Use cases

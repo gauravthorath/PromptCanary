@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 500" font-family="-apple-system,'Segoe UI',Helvetica,Arial,sans-serif">
+  <style>
+    :root { --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#8a897f;
+      --grid:rgba(11,11,11,.09); --faith:#1f6f8b; --corr:#c98a00; --good:#0ca30c; --crit:#d03b3b; --accent:#e8b400; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+      --page:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#8b8a80;
+      --grid:rgba(255,255,255,.10); --faith:#4bb3d6; --corr:#f0b429; --good:#35b535; --crit:#e66767; --accent:#f5c518; } }
+    .mono { font-family:'IBM Plex Mono','SF Mono',Menlo,Consolas,monospace; }
+    .title { font-size:16px; font-weight:600; fill:var(--ink); letter-spacing:.06em; }
+    .sub { font-size:12px; fill:var(--ink2); }
+    .tick { font-size:10px; fill:var(--muted); }
+    .axlbl { font-size:11px; fill:var(--ink2); }
+    .leg { font-size:12px; fill:var(--ink2); }
+  </style>
+  <rect x="0" y="0" width="1040" height="500" fill="var(--page)"/>
+  <rect x="16" y="18" width="26" height="26" rx="6" fill="var(--accent)"/>
+  <g transform="translate(19,21) scale(0.62)">
+    <path d="M1.5 11.5 10 15.5l-5.5 4z" fill="#0b0b0b"/><circle cx="14" cy="18" r="9" fill="#0b0b0b"/>
+    <circle cx="21" cy="10" r="6" fill="#0b0b0b"/><path d="M26.5 7.5 32 10.2l-5.5 2.7z" fill="#0b0b0b"/>
+    <circle cx="23" cy="8.6" r="1.4" fill="#e8b400"/>
+    <path d="M12.5 27.2v2.8M16.5 27.2v2.8" stroke="#0b0b0b" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+  <text x="54" y="30" class="mono title">QUALITY OVER TIME — LANGSMITH RUN FEEDBACK</text>
+  <text x="54" y="48" class="sub">37 canary-runs · 08-21–08-22 · pass rate 27/37 · candidate faithfulness &amp; correctness per run</text>
+  <line x1="70" x2="1016" y1="404.0" y2="404.0" stroke="var(--grid)" stroke-width="1"/>
+  <text x="60" y="407.0" text-anchor="end" class="tick">0.00</text>
+  <line x1="70" x2="1016" y1="326.0" y2="326.0" stroke="var(--grid)" stroke-width="1"/>
+  <text x="60" y="329.0" text-anchor="end" class="tick">0.25</text>
+  <line x1="70" x2="1016" y1="248.0" y2="248.0" stroke="var(--grid)" stroke-width="1"/>
+  <text x="60" y="251.0" text-anchor="end" class="tick">0.50</text>
+  <line x1="70" x2="1016" y1="170.0" y2="170.0" stroke="var(--grid)" stroke-width="1"/>
+  <text x="60" y="173.0" text-anchor="end" class="tick">0.75</text>
+  <line x1="70" x2="1016" y1="92.0" y2="92.0" stroke="var(--grid)" stroke-width="1"/>
+  <text x="60" y="95.0" text-anchor="end" class="tick">1.00</text>
+  <path d="M70.0,123.2 L96.3,222.0 L122.6,144.0 L148.8,92.0 L175.1,92.0 L201.4,92.0 L227.7,92.0 L253.9,92.0 L280.2,92.0 L306.5,118.0 L332.8,92.0 L359.1,92.0 L385.3,92.0 L411.6,92.0 L437.9,92.0 L464.2,107.6 L490.4,136.6 L516.7,136.6 L543.0,136.6 L569.3,92.0 L595.6,92.0 L621.8,92.0 L648.1,92.0 L674.4,92.0 L700.7,92.0 L726.9,92.0 L753.2,92.0 L779.5,92.0 L805.8,92.0 L832.1,196.0 L858.3,92.0 L884.6,92.0 L910.9,92.0 L937.2,92.0 L963.4,107.6 L989.7,92.0 L1016.0,92.0" fill="none" stroke="var(--faith)" stroke-width="2"/>
+  <path d="M70.0,92.0 L96.3,196.0 L122.6,92.0 L148.8,92.0 L175.1,92.0 L201.4,92.0 L227.7,92.0 L253.9,92.0 L280.2,92.0 L306.5,92.0 L332.8,92.0 L359.1,92.0 L385.3,92.0 L411.6,92.0 L437.9,92.0 L464.2,92.0 L490.4,136.6 L516.7,136.6 L543.0,92.0 L569.3,92.0 L595.6,92.0 L621.8,92.0 L648.1,92.0 L674.4,92.0 L700.7,92.0 L726.9,92.0 L753.2,92.0 L779.5,92.0 L805.8,92.0 L832.1,196.0 L858.3,92.0 L884.6,92.0 L910.9,92.0 L937.2,92.0 L963.4,92.0 L989.7,92.0 L1016.0,92.0" fill="none" stroke="var(--corr)" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <circle cx="1016.0" cy="92.0" r="4.5" fill="var(--faith)" stroke="var(--surface)" stroke-width="2"/><circle cx="1016.0" cy="92.0" r="4.5" fill="var(--corr)" stroke="var(--surface)" stroke-width="2"/>
+  <text x="70" y="422" class="mono tick">verdict per run →</text>
+  <rect x="70.0" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="95.6" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="121.1" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="146.7" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="172.3" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="197.8" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="223.4" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="249.0" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="274.5" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="300.1" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="325.7" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="351.2" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="376.8" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="402.4" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="427.9" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="453.5" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="479.1" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="504.6" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="530.2" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="555.8" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="581.4" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="606.9" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="632.5" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="658.1" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="683.6" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="709.2" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="734.8" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="760.3" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="785.9" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="811.5" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="837.0" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="862.6" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="888.2" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="913.7" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="939.3" y="426" width="24.1" height="12" rx="2" fill="var(--crit)"/>
+  <rect x="964.9" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <rect x="990.4" y="426" width="24.1" height="12" rx="2" fill="var(--good)"/>
+  <g transform="translate(716,476)" class="leg">
+    <line x1="0" y1="-4" x2="22" y2="-4" stroke="var(--faith)" stroke-width="2"/><text x="28" y="0">faithfulness</text>
+    <line x1="120" y1="-4" x2="142" y2="-4" stroke="var(--corr)" stroke-width="1.6" stroke-dasharray="4 3"/><text x="148" y="0">correctness</text>
+  </g>
+  <g transform="translate(16,476)" class="leg">
+    <rect x="0" y="-9" width="11" height="11" rx="2" fill="var(--good)"/><text x="16" y="0">pass</text>
+    <rect x="58" y="-9" width="11" height="11" rx="2" fill="var(--crit)"/><text x="74" y="0">fail</text>
+  </g>
+</svg>
