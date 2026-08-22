@@ -4,17 +4,25 @@ import { diffWords } from "diff";
 import { useMemo, useState } from "react";
 import { Button, Card, CopyButton } from "./ui";
 
+export interface DemoPreset {
+	label: string;
+	hint: string;
+	prompt: string;
+}
+
 export function PromptPanel({
 	currentPrompt,
 	candidatePrompt,
 	onCandidateChange,
-	onLoadRegression,
+	demos,
+	onLoadDemo,
 	disabled,
 }: {
 	currentPrompt: string;
 	candidatePrompt: string;
 	onCandidateChange: (v: string) => void;
-	onLoadRegression: () => void;
+	demos: DemoPreset[];
+	onLoadDemo: (prompt: string) => void;
 	disabled: boolean;
 }) {
 	const [tab, setTab] = useState<"edit" | "diff">("edit");
@@ -81,14 +89,23 @@ export function PromptPanel({
 						))}
 					</pre>
 				)}
-				<div className="mt-3 flex items-center justify-between gap-2">
-					<Button
-						variant="ghost"
-						onClick={onLoadRegression}
-						disabled={disabled}
-					>
-						Load demo change (planted regression)
-					</Button>
+				<div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+					<div className="flex flex-wrap items-center gap-1.5">
+						<span className="mr-1 font-mono text-[11px] uppercase tracking-wide text-muted">
+							Load demo
+						</span>
+						{demos.map((d) => (
+							<Button
+								key={d.label}
+								variant="subtle"
+								onClick={() => onLoadDemo(d.prompt)}
+								disabled={disabled}
+								title={d.hint}
+							>
+								{d.label}
+							</Button>
+						))}
+					</div>
 					<span className="text-xs tabular-nums text-muted">
 						{candidatePrompt.length} chars
 					</span>
