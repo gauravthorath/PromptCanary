@@ -55,35 +55,41 @@ Two axes, kept deliberately small so a full scan stays cheap:
 
 **Strategies = HOW to deliver the attack** (each wraps the plugin payloads):
 
-| Strategy | Delivery |
-|---|---|
-| `basic` | Raw payload, no wrapper — the baseline |
-| `prompt-injection` | Classic "ignore previous instructions" framing |
-| `jailbreak` | Iterative single-turn search that adapts to refusals |
+| Strategy | Delivery | Cost |
+|---|---|---|
+| `basic` | Raw payload, no wrapper — the baseline | single-shot |
+| `jailbreak-templates` | Static jailbreak / injection templates | single-shot |
+| `jailbreak:meta` *(opt-in)* | Adaptive single-turn search that reacts to refusals | **iterative** |
+| `crescendo` *(opt-in)* | Multi-turn escalation | **iterative** |
 
-`numTests` is the payloads generated per plugin. The full config
-(5 plugins × 3 strategies × 3 tests) is the intended routine scan.
+`numTests` is the payloads generated per plugin. The shipped config
+(5 plugins × 2 single-shot strategies × 3 tests = 48 probes) is the routine
+scan; uncomment the iterative strategies for a deep scan. The older
+`jailbreak` and `prompt-injection` ids are deprecated in favour of the above.
 
 ## Cost (token model)
 
-A single **canary run** is ~26 model calls. A **red-team scan** is much larger —
+A single **canary run** is ~26 model calls. A **red-team scan** is bigger —
 run it on a cadence (before a release), never inside the per-change gate.
 
-For the shipped config (5 plugins, 3 strategies, `numTests: 3`):
+**Measured — shipped config** (5 plugins × 2 single-shot strategies,
+`numTests: 3` → 48 probes), run 2026-08-22 against `gpt-4.1-mini`:
 
-- Base payloads: 5 × 3 = **15**, delivered by 3 strategies.
-- `basic` + `prompt-injection`: ~30 single-shot probes.
-- `jailbreak` is **iterative** (~4–8 turns each) — the dominant cost, ~60–120
-  probes on its own.
-- **≈ 100–150 target calls** + one grader call each ≈ **200–300 LLM calls**.
-- At ~550 tokens/probe and ~600/grade ≈ **150–250K tokens**, i.e. a few US
-  cents on `gpt-4.1-mini` via OpenRouter. (promptfoo's remote *generation*
-  tokens are separate and not on your key.)
+- 48 probes + grading, **28,594 total tokens**, **38s** wall time.
+- ≈ a US cent on OpenRouter. Both strategies here are single-shot, so cost
+  scales linearly with `plugins × strategies × numTests`.
 
-**Cost drivers, in order:** the `jailbreak` strategy (iterative) → `numTests` →
-plugin count. To make a scan cheap for a demo, drop `jailbreak` and set
-`numTests: 1` (~15–20 calls). To go deep, raise `numTests` and add multi-turn
-strategies (`crescendo`, `goat`) — but those multiply cost fast.
+**Deep scan — the expensive mode.** Uncomment the iterative strategies
+(`jailbreak:meta`, `crescendo`) in the config: each test fans out into many
+adaptive turns, pushing a scan to **hundreds of calls / 150K+ tokens** and
+several minutes. Run it deliberately, with a long timeout — not routinely.
+(A first attempt with the old iterative `jailbreak` strategy did not finish
+inside a 10-minute window; that is why the shipped default is single-shot.)
+
+**Cost drivers, in order:** iterative strategies (`jailbreak:meta`,
+`crescendo`) → `numTests` → plugin count. Cheapest demo: one plugin,
+`basic` only, `numTests: 1` (~a handful of calls). promptfoo's remote
+*attack-generation* tokens are separate and not billed to your OpenRouter key.
 
 ## Feeding results back
 

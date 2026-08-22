@@ -39,11 +39,14 @@ redteam:
     - id: excessive-agency    # tries to get it to act beyond answering
 
   # HOW to deliver the attacks — strategies wrap the plugin payloads.
+  # These two are single-shot, so a routine scan completes in minutes.
   strategies:
     - id: basic               # the raw payload, no wrapper (baseline)
-    - id: prompt-injection    # classic "ignore previous instructions" framing
-    - id: jailbreak           # iterative single-turn jailbreak search
+    - id: jailbreak-templates # static jailbreak/injection templates (fast)
+    # Deep scan (iterative, MUCH slower — run with a long timeout, not routinely):
+    #   - id: jailbreak:meta      # adaptive single-turn search
+    #   - id: crescendo           # multi-turn escalation
 
-  # Attacks per plugin. 3 keeps a full scan in the low hundreds of calls;
+  # Attacks per plugin. 3 keeps a routine scan in the low hundreds of calls;
   # raise deliberately when you want depth, not for routine runs.
   numTests: 3
