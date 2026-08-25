@@ -1,6 +1,8 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { apiKey, DEFAULT_MODEL } from "./env";
 
+export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+
 /** Chat model via OpenRouter (OpenAI-compatible endpoint). */
 export function makeModel(model = DEFAULT_MODEL, temperature = 0.2) {
   const key = apiKey();
@@ -14,7 +16,7 @@ export function makeModel(model = DEFAULT_MODEL, temperature = 0.2) {
     temperature,
     apiKey: key,
     configuration: {
-      baseURL: "https://openrouter.ai/api/v1",
+      baseURL: OPENROUTER_BASE_URL,
       defaultHeaders: {
         "HTTP-Referer": "https://github.com/TuringCollegeSubmissions/gaurat-AE.AFA.4.6",
         "X-Title": "PromptCanary",

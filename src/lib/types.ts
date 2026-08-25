@@ -59,12 +59,12 @@ export const DEFAULT_TOOL_FLAGS: ToolFlags = {
 export interface PromptFinding {
   category: string;
   message: string;
-  source: "lint" | "review";
+  source: "lint" | "review" | "guardrail";
 }
 
 /** Injection screen of the candidate prompt (OWASP LLM01 mitigations). */
 export interface PromptSafety {
-  /** 0–1; max of the lint layer and the LLM review. */
+  /** 0–1; max of the lint layer, the LLM review and the OpenRouter guardrail probe. */
   risk: number;
   /** True → the gate refuses a plain ship; an explicit override is required. */
   flagged: boolean;

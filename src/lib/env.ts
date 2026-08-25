@@ -15,6 +15,16 @@ export function isMockMode(): boolean {
 }
 
 /**
+ * Layer 3 of the prompt-safety screen: probe the OpenRouter prompt-injection
+ * guardrail assigned to the API key. On by default with a key; set
+ * OPENROUTER_GUARDRAIL_PROBE=false to skip the extra (tiny) request.
+ */
+export function guardrailProbeEnabled(): boolean {
+  const flag = process.env.OPENROUTER_GUARDRAIL_PROBE?.trim().toLowerCase();
+  return !isMockMode() && flag !== "false" && flag !== "0";
+}
+
+/**
  * LangSmith observability (Hard optional #2). LangChain picks the env vars
  * up on its own; this helper only exists so the API layer can report the
  * status to the UI and know when flushing traces is worth awaiting.

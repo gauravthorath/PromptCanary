@@ -231,7 +231,7 @@ function PromptSafetyCard({ safety }: { safety: PromptSafety }) {
         {safety.findings.map((f, i) => (
           <li key={`${f.category}-${i}`} className="text-sm text-ink">
             <span className="mr-2 rounded-full border border-hairline bg-surface px-2 py-0.5 font-mono text-[11px] text-ink-2">
-              {f.source === "lint" ? "lint" : "review"} · {f.category}
+              {f.source} · {f.category}
             </span>
             {f.message}
           </li>
