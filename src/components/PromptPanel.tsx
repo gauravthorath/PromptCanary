@@ -1,7 +1,7 @@
 "use client";
 
 import { diffWords } from "diff";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button, Card, CopyButton } from "./ui";
 
 export interface DemoPreset {
@@ -26,10 +26,8 @@ export function PromptPanel({
 	disabled: boolean;
 }) {
 	const [tab, setTab] = useState<"edit" | "diff">("edit");
-	const parts = useMemo(
-		() => diffWords(currentPrompt, candidatePrompt),
-		[currentPrompt, candidatePrompt],
-	);
+	// Memoized by the React Compiler (next.config.ts → reactCompiler).
+	const parts = diffWords(currentPrompt, candidatePrompt);
 
 	return (
 		<div className="flex flex-col gap-4">

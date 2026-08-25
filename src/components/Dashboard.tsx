@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { DevSidebar } from "./DevSidebar";
 import { MemoryPanel } from "./MemoryPanel";
 import { type DemoPreset, PromptPanel } from "./PromptPanel";
@@ -45,18 +45,20 @@ export function Dashboard() {
     decisions: DecisionRecord[];
   }>({ failingCases: [], decisions: [] });
 
-  const refreshMemory = useCallback(async () => {
+  // Plain functions: the React Compiler memoizes what needs memoizing, and
+  // the mount effect below depends on nothing from render scope.
+  const refreshMemory = async () => {
     const res = await fetch("/api/memory");
     if (res.ok) setMemory(await res.json());
-  }, []);
+  };
 
-  const refreshBootstrap = useCallback(async () => {
+  const refreshBootstrap = async () => {
     const res = await fetch("/api/bootstrap");
     if (!res.ok) return;
     const data: Bootstrap = await res.json();
     setBoot(data);
     setSettings((s) => ({ ...s, model: s.model || data.defaultModel }));
-  }, []);
+  };
 
   useEffect(() => {
     // One-time fetch of server state on mount; setState runs after the
@@ -65,7 +67,7 @@ export function Dashboard() {
     Promise.all([refreshBootstrap(), refreshMemory()]).finally(() =>
       setPhase("idle"),
     );
-  }, [refreshBootstrap, refreshMemory]);
+  }, []);
 
   const startRun = async () => {
     const id = crypto.randomUUID();
