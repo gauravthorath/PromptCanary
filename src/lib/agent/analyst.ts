@@ -1,4 +1,4 @@
-import { AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage } from "@langchain/core/messages";
+import { type AIMessage, type BaseMessage, HumanMessage, SystemMessage, ToolMessage } from "@langchain/core/messages";
 import { isMockMode } from "../env";
 import { makeModel } from "../llm";
 import { getRunContext } from "./registry";
@@ -47,9 +47,7 @@ export async function analyzeRun(
   const scoreboard = ctx.results
     .map(
       (r) =>
-        `${r.caseId}: faithfulness ${r.baseline.scores.faithfulness}→${r.candidate.scores.faithfulness}, ` +
-        `correctness ${r.baseline.scores.correctness}→${r.candidate.scores.correctness}` +
-        (r.regressed ? "  ⟵ REGRESSED" : ""),
+        `${r.caseId}: faithfulness ${r.baseline.scores.faithfulness}→${r.candidate.scores.faithfulness}, correctness ${r.baseline.scores.correctness}→${r.candidate.scores.correctness}${r.regressed ? "  ⟵ REGRESSED" : ""}`,
     )
     .join("\n");
 
@@ -110,8 +108,6 @@ function mockSummary(
       ? ` Cases ${[...repeatOffenders].join(", ")} have failed before — this is a repeat offender.`
       : "";
   return (
-    `${regressed.length} of ${total} cases regressed (${names}). The candidate prompt dropped the ` +
-    `"answer only from the policy" grounding and the citation requirement, so answers invent refund windows, ` +
-    `discount rates and even legal advice the policy never states.${repeat} Recommendation: revert.`
+    `${regressed.length} of ${total} cases regressed (${names}). The candidate prompt dropped the "answer only from the policy" grounding and the citation requirement, so answers invent refund windows, discount rates and even legal advice the policy never states.${repeat} Recommendation: revert.`
   );
 }

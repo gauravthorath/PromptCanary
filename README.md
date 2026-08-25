@@ -29,7 +29,7 @@ load_change → run_traces → run_evals → analyze → gate (interrupt)
 - **run_evals** scores each answer with an LLM judge (faithfulness + correctness, structured output) and flags regressions (delta ≤ −0.15 or score < 0.6).
 - **analyze** is a function-calling analyst: it can call `get_trace` and `diff_prompt` to explain *what got worse and why*.
 - **gate** interrupts the graph. Nothing ships without a human decision, and a **security guard refuses a plain "ship" while evals are failing** — only an explicit recorded override gets through.
-- **prompt-safety screen** (OWASP LLM01 mitigations): before tracing, the candidate prompt itself is checked by a deterministic lint (instruction override, role hijack, destructive imperatives, exfiltration, obfuscated payloads) plus an LLM review at temperature 0. Findings never skip the evals — behavior is still measured — they *taint* the run: the gate refuses a plain Ship and only a logged override ships. Tone or grounding changes are deliberately not flagged; the eval suite owns behavior. Prompt injection has no complete fix — this is layered mitigation, and the fail-closed gate stays the real guard.
+- **prompt-safety screen** (OWASP LLM01 mitigations): before tracing, the candidate prompt itself is checked by a deterministic lint (instruction override, role hijack, destructive imperatives, exfiltration, obfuscated payloads) plus an LLM review at temperature 0. Findings never skip the evals — behavior is still measured — they *taint* the run: the gate refuses a plain Ship and only a logged override ships. A third layer probes [OpenRouter's prompt-injection guardrail](https://openrouter.ai/docs/guides/features/guardrails/prompt-injection): the candidate is sent through the same gateway every runtime call uses, and a Block (403 with matched patterns) or Redact (`[PROMPT_INJECTION]` in the echo) becomes a finding too — so the guardrail assigned to your API key protects the toy app at runtime *and* speaks up before ship. Findings never skip the evals — behavior is still measured — they *taint* the run: the gate refuses a plain Ship and only a logged override ships. Tone or grounding changes are deliberately not flagged; the eval suite owns behavior. Prompt injection has no complete fix — this is layered mitigation, and the fail-closed gate stays the real guard.
 
 ## Features → course requirements
 
@@ -90,6 +90,13 @@ pnpm dev                     # http://localhost:3000
 
 Runtime state lives in `./data` (gitignored): the live prompt, the failing-case memory and the ship/revert audit log.
 
+```bash
+pnpm test                    # unit tests (vitest): prompt-screen rules, guardrail probe parser, gate guard
+pnpm lint
+```
+
+**OpenRouter guardrail (optional, recommended):** at openrouter.ai → Settings → Privacy → Guardrails create a guardrail, enable *Security → prompt injection* (Block or Redact), and assign it to the key in `.env.local`. PromptCanary probes it on every candidate (one tiny request); `OPENROUTER_GUARDRAIL_PROBE=false` disables the probe. Flag mode only records to OpenRouter's logs and is not surfaced.
+
 ### LangSmith observability (Hard optional #2)
 
 Uncomment the `LANGSMITH_*` block in `.env.local` (key from
@@ -141,7 +148,9 @@ Because verdict, faithfulness, correctness and prompt_safety are logged as run-l
 
 ## Technical decisions
 
-- **Forced graph over a free agent:** evals must run every time; the model is never trusted to decide to eval itself.
+- **Forced graph over a free agent:** evals must run every time; the model is never trusted to decide to eval itself. LangChain's prebuilt `create_agent` (ReAct loop) was considered and rejected for the pipeline: `graph.ts` is a deterministic gate with an `interrupt`, not a tool loop, and the one place a real tool loop exists — the analyst — already uses `bindTools` with the enabled read-only tools.
+- **Prompt screen is unit-tested, not just demoed:** `pnpm test` runs table-driven cases over every lint rule (including legitimate support text that must *not* be flagged), the OpenRouter guardrail probe parser against the documented 403/redact shapes, and the gate's decision guard for every ship/override/revert/tool-flag combination.
+- **React Compiler, no hand memoization:** `reactCompiler: true` in `next.config.ts`; the components carry no `useMemo`/`useCallback`.
 - **Fail closed everywhere:** empty golden set, missing traces, disabled `run_evals`, judge/API errors — every one aborts the run instead of green-lighting it.
 - **`MemorySaver` checkpointer** keeps this a single-process dev tool; swap for a Postgres/SQLite checkpointer to deploy serverless.
 - **Demo mode** (no API key) exercises the identical graph with deterministic fixtures — the planted regression degrades exactly the way an ungrounded prompt degrades in real runs.
