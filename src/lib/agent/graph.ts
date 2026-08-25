@@ -135,15 +135,15 @@ async function analyze(state: State) {
   return { summary };
 }
 
-/** Human-in-the-loop gate. Pauses the graph until /api/decide resumes it. */
-function gate(state: State) {
-  const decision = interrupt({
-    verdict: state.verdict,
-    summary: state.summary,
-    guardMessage: state.guardMessage,
-  }) as Decision;
-
-  // Security guard: validate the decision before anything irreversible.
+/**
+ * Security guard: validate a human decision before anything irreversible.
+ * Pure so it is unit-testable; the gate node wraps it around `interrupt`.
+ * Returns the decision to act on, or `null` plus the refusal to show.
+ */
+export function validateDecision(
+  decision: Decision,
+  state: Pick<State, "verdict" | "promptSafety" | "toolFlags">,
+): { decision: Decision | null; guardMessage: string | null } {
   if (decision === "ship" && state.verdict !== "pass") {
     return {
       decision: null,
@@ -175,7 +175,17 @@ function gate(state: State) {
   return { decision, guardMessage: null };
 }
 
-function routeGate(state: State): "do_ship" | "do_revert" | "run_traces" | "gate" {
+/** Human-in-the-loop gate. Pauses the graph until /api/decide resumes it. */
+function gate(state: State) {
+  const decision = interrupt({
+    verdict: state.verdict,
+    summary: state.summary,
+    guardMessage: state.guardMessage,
+  }) as Decision;
+  return validateDecision(decision, state);
+}
+
+export function routeGate(state: State): "do_ship" | "do_revert" | "run_traces" | "gate" {
   switch (state.decision) {
     case "ship":
     case "ship_override":
