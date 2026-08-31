@@ -1,0 +1,11 @@
+# Never upload local secrets. Public demo stays in fixture mode unless a
+# visitor pastes their own OpenRouter key in Developer settings.
+.env
+.env.*
+!.env.example
+
+# Local runtime state
+/data
+/node_modules
+/.next
+.vercel
