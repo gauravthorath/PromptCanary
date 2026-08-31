@@ -10,6 +10,7 @@ Built with **Next.js (App Router, TypeScript) + LangGraph.js**.
 **Not:** a content writer, a Cursor clone, or a medical chatbot.
 
 Repo: [github.com/gauravthorath/PromptCanary](https://github.com/gauravthorath/PromptCanary)
+Live demo: [promptcanary-eosin.vercel.app](https://promptcanary-eosin.vercel.app) (fixture mode unless you paste your own OpenRouter key)
 
 ## How it works
 
