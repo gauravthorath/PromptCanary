@@ -75,7 +75,7 @@ pnpm lint
 
 Do **not** put a personal `OPENROUTER_API_KEY` on a public Vercel project. Leave it unset so visitors see demo mode unless they paste their own key.
 
-**HITL on serverless:** the checkpointer is in-memory (`MemorySaver`). A Ship/Revert after a cold start may miss the paused thread — run locally for a reliable gate, or swap the checkpointer for Postgres/SQLite. Hobby Vercel functions time out at 60s.
+**HITL on serverless:** the checkpointer is in-memory (`MemorySaver`) and runtime files live in `/tmp`. A Ship/Revert after a cold start may miss the paused thread, and memory does not persist across instances — run locally for a reliable gate, or swap the checkpointer for Postgres/SQLite. Hobby Vercel functions time out at 60s.
 
 **OpenRouter guardrail (optional, recommended):** at openrouter.ai → Settings → Privacy → Guardrails create a guardrail, enable *Security → prompt injection* (Block or Redact), and assign it to the key. PromptCanary probes it on every candidate (one tiny request); `OPENROUTER_GUARDRAIL_PROBE=false` disables the probe.
 

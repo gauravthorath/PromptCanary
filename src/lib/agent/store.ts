@@ -4,12 +4,15 @@ import { CURRENT_PROMPT } from "../toy-app/policy";
 import type { DecisionRecord, FailingCaseRecord } from "../types";
 
 /**
- * Long-term memory + durable app state, as JSON files under ./data.
+ * Long-term memory + durable app state, as JSON files under ./data
+ * (or /tmp on Vercel — the serverless filesystem is read-only).
  * - failing-cases.json  → memory of every case that ever regressed
  * - decisions.json      → ship/revert audit log
  * - current-prompt.txt  → the prompt that is actually "live" (ship/revert mutate it)
  */
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = process.env.VERCEL
+	? path.join("/tmp", "promptcanary-data")
+	: path.join(process.cwd(), "data");
 
 async function readJson<T>(file: string, fallback: T): Promise<T> {
   try {
