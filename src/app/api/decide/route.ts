@@ -3,45 +3,66 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getGraph } from "@/lib/agent/graph";
 import { buildReport, errorReport } from "@/lib/agent/report";
+import {
+	assertLiveRunBudget,
+	clientIp,
+	readVisitorKey,
+	runWithRequestKey,
+} from "@/lib/http";
 import { flushTraces, logDecisionFeedback } from "@/lib/tracing";
 import type { Decision } from "@/lib/types";
 
 export const runtime = "nodejs";
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 const VALID: Decision[] = ["ship", "ship_override", "revert", "rerun"];
 
+function statusOf(err: unknown): number {
+	const status = (err as { status?: number }).status;
+	return status === 429 ? 429 : 500;
+}
+
 /** Resume the paused graph with the human's decision. */
 export async function POST(req: NextRequest) {
-  let threadId = "unknown";
-  try {
-    const body = (await req.json()) as { threadId?: string; decision?: string };
-    threadId = body.threadId ?? "";
-    const decision = body.decision as Decision;
-    if (!threadId || !VALID.includes(decision)) {
-      throw new Error(`Invalid decision "${body.decision}".`);
-    }
-    const runId = crypto.randomUUID();
-    const graph = getGraph();
-    await graph.invoke(new Command({ resume: decision }), {
-      configurable: { thread_id: threadId },
-      runId,
-      runName: "canary-decision",
-      tags: ["canary"],
-      metadata: { threadId, decision },
-    });
-    const report = await buildReport(threadId);
-    await logDecisionFeedback(
-      runId,
-      decision,
-      report.status,
-      report.guardMessage,
-    );
-    return NextResponse.json(report);
-  } catch (err) {
-    console.error("[canary] decide failed:", err);
-    return NextResponse.json(errorReport(threadId, err), { status: 500 });
-  } finally {
-    await flushTraces();
-  }
+	let threadId = "unknown";
+	try {
+		const visitorKey = readVisitorKey(req);
+		const usingServerKey =
+			!visitorKey && Boolean(process.env.OPENROUTER_API_KEY?.trim());
+		if (visitorKey || usingServerKey) {
+			assertLiveRunBudget(clientIp(req), usingServerKey);
+		}
+		return await runWithRequestKey(visitorKey, async () => {
+			const body = (await req.json()) as { threadId?: string; decision?: string };
+			threadId = body.threadId ?? "";
+			const decision = body.decision as Decision;
+			if (!threadId || !VALID.includes(decision)) {
+				throw new Error(`Invalid decision "${body.decision}".`);
+			}
+			const runId = crypto.randomUUID();
+			const graph = getGraph();
+			await graph.invoke(new Command({ resume: decision }), {
+				configurable: { thread_id: threadId },
+				runId,
+				runName: "canary-decision",
+				tags: ["canary"],
+				metadata: { threadId, decision },
+			});
+			const report = await buildReport(threadId);
+			await logDecisionFeedback(
+				runId,
+				decision,
+				report.status,
+				report.guardMessage,
+			);
+			return NextResponse.json(report);
+		});
+	} catch (err) {
+		console.error("[canary] decide failed:", err);
+		return NextResponse.json(errorReport(threadId, err), {
+			status: statusOf(err),
+		});
+	} finally {
+		await flushTraces();
+	}
 }

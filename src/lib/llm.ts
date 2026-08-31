@@ -8,7 +8,7 @@ export function makeModel(model = DEFAULT_MODEL, temperature = 0.2) {
   const key = apiKey();
   if (!key) {
     throw new Error(
-      "OPENROUTER_API_KEY is not set. Copy .env.example to .env.local and paste your key.",
+      "No OpenRouter key. Paste one in Developer settings, or set OPENROUTER_API_KEY locally.",
     );
   }
   return new ChatOpenAI({
@@ -18,7 +18,7 @@ export function makeModel(model = DEFAULT_MODEL, temperature = 0.2) {
     configuration: {
       baseURL: OPENROUTER_BASE_URL,
       defaultHeaders: {
-        "HTTP-Referer": "https://github.com/TuringCollegeSubmissions/gaurat-AE.AFA.4.6",
+        "HTTP-Referer": "https://github.com/gauravthorath/PromptCanary",
         "X-Title": "PromptCanary",
       },
     },

@@ -1,8 +1,10 @@
+import { requestApiKey } from "./http";
+
 export const DEFAULT_MODEL =
-  process.env.OPENROUTER_MODEL ?? "openai/gpt-4.1-mini";
+	process.env.OPENROUTER_MODEL ?? "openai/gpt-4.1-mini";
 
 export function apiKey(): string | undefined {
-  return process.env.OPENROUTER_API_KEY?.trim() || undefined;
+	return requestApiKey() || process.env.OPENROUTER_API_KEY?.trim() || undefined;
 }
 
 /**
@@ -11,7 +13,7 @@ export function apiKey(): string | undefined {
  * The UI shows a banner; a real run requires the key.
  */
 export function isMockMode(): boolean {
-  return !apiKey();
+	return !apiKey();
 }
 
 /**
@@ -20,22 +22,21 @@ export function isMockMode(): boolean {
  * OPENROUTER_GUARDRAIL_PROBE=false to skip the extra (tiny) request.
  */
 export function guardrailProbeEnabled(): boolean {
-  const flag = process.env.OPENROUTER_GUARDRAIL_PROBE?.trim().toLowerCase();
-  return !isMockMode() && flag !== "false" && flag !== "0";
+	const flag = process.env.OPENROUTER_GUARDRAIL_PROBE?.trim().toLowerCase();
+	return !isMockMode() && flag !== "false" && flag !== "0";
 }
 
 /**
- * LangSmith observability (Hard optional #2). LangChain picks the env vars
- * up on its own; this helper only exists so the API layer can report the
- * status to the UI and know when flushing traces is worth awaiting.
+ * LangSmith observability. LangChain picks the env vars up on its own;
+ * this helper reports status to the UI and knows when to flush traces.
  */
 export function isTracingEnabled(): boolean {
-  const flag = process.env.LANGSMITH_TRACING?.trim().toLowerCase();
-  return (
-    (flag === "true" || flag === "1") && !!process.env.LANGSMITH_API_KEY?.trim()
-  );
+	const flag = process.env.LANGSMITH_TRACING?.trim().toLowerCase();
+	return (
+		(flag === "true" || flag === "1") && !!process.env.LANGSMITH_API_KEY?.trim()
+	);
 }
 
 export function tracingProject(): string {
-  return process.env.LANGSMITH_PROJECT?.trim() || "default";
+	return process.env.LANGSMITH_PROJECT?.trim() || "default";
 }

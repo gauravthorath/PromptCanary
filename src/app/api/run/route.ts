@@ -3,77 +3,97 @@ import { NextResponse } from "next/server";
 import { getGraph } from "@/lib/agent/graph";
 import { buildReport, errorReport } from "@/lib/agent/report";
 import { DEFAULT_MODEL, isMockMode } from "@/lib/env";
+import {
+	assertLiveRunBudget,
+	clientIp,
+	readVisitorKey,
+	runWithRequestKey,
+} from "@/lib/http";
 import { flushTraces, logVerdictFeedback } from "@/lib/tracing";
 import { DEFAULT_TOOL_FLAGS, type ToolFlags } from "@/lib/types";
 
 export const runtime = "nodejs";
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 interface RunBody {
-  threadId?: string;
-  candidatePrompt?: string;
-  model?: string;
-  baselineModel?: string;
-  temperature?: number;
-  tools?: Partial<ToolFlags>;
+	threadId?: string;
+	candidatePrompt?: string;
+	model?: string;
+	baselineModel?: string;
+	temperature?: number;
+	tools?: Partial<ToolFlags>;
+}
+
+function statusOf(err: unknown): number {
+	const status = (err as { status?: number }).status;
+	return status === 429 ? 429 : 500;
 }
 
 /** Start a canary run. The graph pauses at the human gate. */
 export async function POST(req: NextRequest) {
-  let threadId = "unknown";
-  try {
-    const body = (await req.json()) as RunBody;
-    threadId = body.threadId?.trim() || crypto.randomUUID();
-    const candidatePrompt = body.candidatePrompt ?? "";
+	let threadId = "unknown";
+	try {
+		const visitorKey = readVisitorKey(req);
+		const usingServerKey =
+			!visitorKey && Boolean(process.env.OPENROUTER_API_KEY?.trim());
+		if (visitorKey || usingServerKey) {
+			assertLiveRunBudget(clientIp(req), usingServerKey);
+		}
+		return await runWithRequestKey(visitorKey, async () => {
+			const body = (await req.json()) as RunBody;
+			threadId = body.threadId?.trim() || crypto.randomUUID();
+			const candidatePrompt = body.candidatePrompt ?? "";
 
-    // Basic input guard: cap prompt size before it reaches any model.
-    if (candidatePrompt.length > 8000) {
-      throw new Error("Candidate prompt is too long (max 8000 characters).");
-    }
+			if (candidatePrompt.length > 8000) {
+				throw new Error("Candidate prompt is too long (max 8000 characters).");
+			}
 
-    const model = body.model?.trim() || DEFAULT_MODEL;
-    const baselineModel = body.baselineModel?.trim() || "";
-    const runId = crypto.randomUUID();
-    const graph = getGraph();
-    await graph.invoke(
-      {
-        threadId,
-        candidatePrompt,
-        model,
-        baselineModel,
-        temperature: clamp(body.temperature ?? 0.2, 0, 2),
-        toolFlags: { ...DEFAULT_TOOL_FLAGS, ...body.tools },
-      },
-      {
-        configurable: { thread_id: threadId },
-        runId,
-        runName: "canary-run",
-        tags: ["canary"],
-        metadata: {
-          threadId,
-          model,
-          baselineModel: baselineModel || model,
-          modelAB: Boolean(baselineModel) && baselineModel !== model,
-          mock: isMockMode(),
-        },
-      },
-    );
-    const report = await buildReport(threadId);
-    await logVerdictFeedback(
-      runId,
-      report.verdict,
-      report.results,
-      report.promptSafety,
-    );
-    return NextResponse.json(report);
-  } catch (err) {
-    console.error("[canary] run failed:", err);
-    return NextResponse.json(errorReport(threadId, err), { status: 500 });
-  } finally {
-    await flushTraces();
-  }
+			const model = body.model?.trim() || DEFAULT_MODEL;
+			const baselineModel = body.baselineModel?.trim() || "";
+			const runId = crypto.randomUUID();
+			const graph = getGraph();
+			await graph.invoke(
+				{
+					threadId,
+					candidatePrompt,
+					model,
+					baselineModel,
+					temperature: clamp(body.temperature ?? 0.2, 0, 2),
+					toolFlags: { ...DEFAULT_TOOL_FLAGS, ...body.tools },
+				},
+				{
+					configurable: { thread_id: threadId },
+					runId,
+					runName: "canary-run",
+					tags: ["canary"],
+					metadata: {
+						threadId,
+						model,
+						baselineModel: baselineModel || model,
+						modelAB: Boolean(baselineModel) && baselineModel !== model,
+						mock: isMockMode(),
+					},
+				},
+			);
+			const report = await buildReport(threadId);
+			await logVerdictFeedback(
+				runId,
+				report.verdict,
+				report.results,
+				report.promptSafety,
+			);
+			return NextResponse.json(report);
+		});
+	} catch (err) {
+		console.error("[canary] run failed:", err);
+		return NextResponse.json(errorReport(threadId, err), {
+			status: statusOf(err),
+		});
+	} finally {
+		await flushTraces();
+	}
 }
 
 function clamp(n: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, Number.isFinite(n) ? n : min));
+	return Math.min(max, Math.max(min, Number.isFinite(n) ? n : min));
 }

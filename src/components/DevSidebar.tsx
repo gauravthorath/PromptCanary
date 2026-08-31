@@ -4,7 +4,7 @@ import { Toggle } from "./ui";
 import type { RunSettings, ToolName } from "@/lib/types";
 
 /**
- * Developer settings live here, off the main path (Medium optional #8):
+ * Developer settings live here, off the main path:
  * model choice, temperature, and per-tool enable/disable switches.
  */
 const MODELS = [
@@ -27,6 +27,8 @@ export function DevSidebar({
 	onClose,
 	settings,
 	onChange,
+	visitorKey,
+	onVisitorKeyChange,
 	disabled,
 	tracing,
 	tracingProject,
@@ -35,6 +37,8 @@ export function DevSidebar({
 	onClose: () => void;
 	settings: RunSettings;
 	onChange: (s: RunSettings) => void;
+	visitorKey: string;
+	onVisitorKeyChange: (key: string) => void;
 	disabled: boolean;
 	tracing: boolean;
 	tracingProject: string;
@@ -72,6 +76,31 @@ export function DevSidebar({
 				</div>
 
 				<div className="space-y-6">
+					<div>
+						<label
+							htmlFor="openrouter-key"
+							className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted"
+						>
+							Your OpenRouter key (optional)
+						</label>
+						<input
+							id="openrouter-key"
+							type="password"
+							autoComplete="off"
+							value={visitorKey}
+							disabled={disabled}
+							placeholder="sk-or-v1-… (this tab only)"
+							onChange={(e) => onVisitorKeyChange(e.target.value.trim())}
+							className="w-full rounded-lg border border-hairline bg-page px-3 py-2 font-mono text-xs text-ink outline-none focus:border-accent"
+						/>
+						<p className="mt-1.5 text-xs leading-relaxed text-muted">
+							Live evals cost tokens. Paste your own key for a real run. It is
+							sent only as a request header, kept in sessionStorage, and never
+							logged. Without a key the app stays in demo mode. Shared server
+							keys are capped at 4 live runs per IP per hour.
+						</p>
+					</div>
+
 					<div>
 						<label
 							htmlFor="model"

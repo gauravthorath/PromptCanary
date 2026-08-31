@@ -11,10 +11,10 @@ import {
 import type { ToolFlags, ToolName } from "../types";
 
 /**
- * The agent's five function tools (Medium optional #6). Each is a real
- * LangChain tool with a zod schema; the graph invokes the pipeline tools
- * directly and binds the read-only ones to the analyst LLM. The UI can
- * enable/disable each one — a disabled pipeline tool fails the run closed.
+ * The agent's five function tools. Each is a real LangChain tool with a
+ * zod schema; the graph invokes the pipeline tools directly and binds the
+ * read-only ones to the analyst LLM. The UI can enable/disable each one —
+ * a disabled pipeline tool fails the run closed.
  */
 export function makeTools(threadId: string, model: string) {
   const run_evals = tool(
@@ -103,8 +103,7 @@ export function makeTools(threadId: string, model: string) {
   const mark_shipped = tool(
     async ({ override }) => {
       const ctx = getRunContext(threadId);
-      // Security guard (Medium optional #8): a failing suite cannot be
-      // shipped unless the human explicitly overrides.
+      // A failing suite cannot be shipped unless the human records an override.
       if (ctx.verdict !== "pass" && !override) {
         throw new Error(
           "Guard refused: evals did not pass. Revert, or ship with an explicit override.",

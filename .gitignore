@@ -47,6 +47,9 @@ next-env.d.ts
 # local study guide
 READINGS.md
 
+# assignment brief (local only)
+135.md
+
 # local tool caches
 .fallow/
 

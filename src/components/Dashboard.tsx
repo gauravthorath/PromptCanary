@@ -40,6 +40,7 @@ export function Dashboard() {
   const [report, setReport] = useState<RunReport | null>(null);
   const [threadId, setThreadId] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [visitorKey, setVisitorKey] = useState("");
   const [memory, setMemory] = useState<{
     failingCases: FailingCaseRecord[];
     decisions: DecisionRecord[];
@@ -60,7 +61,19 @@ export function Dashboard() {
     setSettings((s) => ({ ...s, model: s.model || data.defaultModel }));
   };
 
+  const canaryHeaders = (): HeadersInit => {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (visitorKey.startsWith("sk-or-")) {
+      headers["x-openrouter-key"] = visitorKey;
+    }
+    return headers;
+  };
+
   useEffect(() => {
+    const stored = sessionStorage.getItem("openrouterKey") ?? "";
+    setVisitorKey(stored);
     // One-time fetch of server state on mount; setState runs after the
     // fetches resolve, not synchronously in the effect body.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -77,7 +90,7 @@ export function Dashboard() {
     try {
       const res = await fetch("/api/run", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: canaryHeaders(),
         body: JSON.stringify({
           threadId: id,
           candidatePrompt: candidate,
@@ -101,7 +114,7 @@ export function Dashboard() {
     try {
       const res = await fetch("/api/decide", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: canaryHeaders(),
         body: JSON.stringify({ threadId, decision }),
       });
       setReport(await res.json());
@@ -215,6 +228,12 @@ export function Dashboard() {
         onClose={() => setSidebarOpen(false)}
         settings={settings}
         onChange={setSettings}
+        visitorKey={visitorKey}
+        onVisitorKeyChange={(key) => {
+          setVisitorKey(key);
+          if (key) sessionStorage.setItem("openrouterKey", key);
+          else sessionStorage.removeItem("openrouterKey");
+        }}
         disabled={running || deciding}
         tracing={boot.tracing}
         tracingProject={boot.tracingProject}

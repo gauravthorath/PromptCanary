@@ -4,10 +4,12 @@ A LangGraph.js **system-monitoring agent** that watches a small LLM app, runs ev
 
 Silent failures are the problem: status 200, the chat still looks fine, faithfulness already dropped. Cursor writes the change. PromptCanary sits on the gate.
 
-Built with **Next.js (App Router, TypeScript) + LangGraph.js**, for Turing College AI Engineering — Sprint 3 (*Building with AI Agents*).
+Built with **Next.js (App Router, TypeScript) + LangGraph.js**.
 
 **Users:** you (and any AI engineer) shipping an LLM feature.
 **Not:** a content writer, a Cursor clone, or a medical chatbot.
+
+Repo: [github.com/gauravthorath/PromptCanary](https://github.com/gauravthorath/PromptCanary)
 
 ## How it works
 
@@ -29,45 +31,9 @@ load_change → run_traces → run_evals → analyze → gate (interrupt)
 - **run_evals** scores each answer with an LLM judge (faithfulness + correctness, structured output) and flags regressions (delta ≤ −0.15 or score < 0.6).
 - **analyze** is a function-calling analyst: it can call `get_trace` and `diff_prompt` to explain *what got worse and why*.
 - **gate** interrupts the graph. Nothing ships without a human decision, and a **security guard refuses a plain "ship" while evals are failing** — only an explicit recorded override gets through.
-- **prompt-safety screen** (OWASP LLM01 mitigations): before tracing, the candidate prompt itself is checked by a deterministic lint (instruction override, role hijack, destructive imperatives, exfiltration, obfuscated payloads) plus an LLM review at temperature 0. Findings never skip the evals — behavior is still measured — they *taint* the run: the gate refuses a plain Ship and only a logged override ships. A third layer probes [OpenRouter's prompt-injection guardrail](https://openrouter.ai/docs/guides/features/guardrails/prompt-injection): the candidate is sent through the same gateway every runtime call uses, and a Block (403 with matched patterns) or Redact (`[PROMPT_INJECTION]` in the echo) becomes a finding too — so the guardrail assigned to your API key protects the toy app at runtime *and* speaks up before ship. Findings never skip the evals — behavior is still measured — they *taint* the run: the gate refuses a plain Ship and only a logged override ships. Tone or grounding changes are deliberately not flagged; the eval suite owns behavior. Prompt injection has no complete fix — this is layered mitigation, and the fail-closed gate stays the real guard.
+- **prompt-safety screen** (OWASP LLM01 mitigations): before tracing, the candidate prompt itself is checked by a deterministic lint (instruction override, role hijack, destructive imperatives, exfiltration, obfuscated payloads) plus an LLM review at temperature 0. Findings never skip the evals — behavior is still measured — they *taint* the run: the gate refuses a plain Ship and only a logged override ships. A third layer probes [OpenRouter's prompt-injection guardrail](https://openrouter.ai/docs/guides/features/guardrails/prompt-injection): the candidate is sent through the same gateway every runtime call uses, and a Block (403 with matched patterns) or Redact (`[PROMPT_INJECTION]` in the echo) becomes a finding too — so the guardrail assigned to your API key protects the toy app at runtime *and* speaks up before ship. Tone or grounding changes are deliberately not flagged; the eval suite owns behavior. Prompt injection has no complete fix — this is layered mitigation, and the fail-closed gate stays the real guard.
 
-## Features → course requirements
-
-### Core requirements (Intra § Task requirements)
-
-| Requirement | How PromptCanary meets it |
-|---|---|
-| **Agent purpose, usefulness, target users** | Catch silent quality regressions before a prompt/model change ships. Users: AI engineers. |
-| **Core functionality + user interactions** | Change → run suite → show what got worse → **Ship / Revert / Re-run**. |
-| **User interface** | Next.js dashboard: prompt editor with word-diff, dumbbell score chart, per-case table with judge reasoning, HITL bar. Dev settings in a sidebar, off the main path. |
-| **Technical implementation + error handling** | LangGraph forced path, 5 tools, checkpointer, fail-closed on empty golden set / API errors / missing traces / disabled eval tool. |
-| **Documentation** | This README, use cases below, decisions in code comments only where non-obvious. |
-
-### Sprint topics (all present)
-
-| Topic | Where it lives |
-|---|---|
-| AI Agents / LangGraph | `src/lib/agent/graph.ts` — forced path with a conditional HITL gate |
-| Short-term memory | LangGraph `MemorySaver` checkpointer (per-run thread state, powers interrupt/resume) |
-| Long-term memory | `data/failing-cases.json` — every case that ever regressed; the analyst flags repeat offenders |
-| OpenAI API | via OpenRouter (`src/lib/llm.ts`), same key as Sprint 1 |
-| Prompt engineering | judge prompts (`src/lib/agent/judge.ts`), analyst prompt, and the toy app prompts under test |
-| Function calling | judge structured output + analyst tool-calling loop (`src/lib/agent/analyst.ts`) |
-| Human-in-the-loop | `interrupt()` at the gate — cannot mark shipped without Approve |
-
-### Optional tasks implemented
-
-| Task | Where |
-|---|---|
-| **Medium #2** — short + long-term memory | Checkpointer + failing-case store (`src/lib/agent/store.ts`) |
-| **Medium #6** — 5 tools, enable/disable in UI | `run_evals`, `get_trace`, `diff_prompt`, `revert_prompt`, `mark_shipped` (`src/lib/agent/tools.ts`), toggles in the dev sidebar |
-| **Medium #7** — multi-model support | Model picker (OpenAI / Anthropic / Google via OpenRouter); optional **baseline model** for a model A/B — baseline answers on the old model, candidate on the new, same golden set |
-| **Medium #8** — security guard, settings vs UX | Ship refused on failed evals unless explicitly overridden (and the override is logged); model/temperature/tools live in a **dev** sidebar |
-| **Easy #4** — model settings as controls | Temperature slider + model select |
-| **Hard #2** — LLM observability | LangSmith tracing of every run and gate decision (see below) |
-| **Hard #3 (shape)** — eval report | The per-case eval report with judge reasoning *is* the product |
-
-## Demo (what a reviewer should see in 90 seconds)
+## Demo (90 seconds)
 
 1. Bundled toy FAQ/policy bot — golden set is **green**.
 2. Click **"Load demo change (planted regression)"** — a "friendlier" prompt that silently drops grounding + citations.
@@ -77,27 +43,42 @@ load_change → run_traces → run_evals → analyze → gate (interrupt)
 
 If step 4 is skipped, there is no package. That is the point.
 
+On a public deploy with **no server API key**, the UI stays in **demo mode** (deterministic fixtures). Paste your own OpenRouter key in Developer settings for a live run.
+
 ## Setup & run
 
-Requires **Node 20+** and an [OpenRouter API key](https://openrouter.ai/keys). Without a key the app runs in a clearly-labelled **demo mode** on deterministic fixtures, so the graph, gate and UI are still fully demoable.
+Requires **Node 20+**. An [OpenRouter API key](https://openrouter.ai/keys) is optional for local demo mode.
 
 ```bash
+git clone https://github.com/gauravthorath/PromptCanary.git
 cd PromptCanary
 pnpm install
-cp .env.example .env.local   # paste OPENROUTER_API_KEY
+cp .env.example .env.local   # optional; paste a key for live evals
 pnpm dev                     # http://localhost:3000
 ```
 
 Runtime state lives in `./data` (gitignored): the live prompt, the failing-case memory and the ship/revert audit log.
 
 ```bash
-pnpm test                    # unit tests (vitest): prompt-screen rules, guardrail probe parser, gate guard
+pnpm test                    # unit tests (vitest)
 pnpm lint
 ```
 
-**OpenRouter guardrail (optional, recommended):** at openrouter.ai → Settings → Privacy → Guardrails create a guardrail, enable *Security → prompt injection* (Block or Redact), and assign it to the key in `.env.local`. PromptCanary probes it on every candidate (one tiny request); `OPENROUTER_GUARDRAIL_PROBE=false` disables the probe. Flag mode only records to OpenRouter's logs and is not surfaced.
+**API cost guards (public deploy):**
 
-### LangSmith observability (Hard optional #2)
+- No live model call without a key. Without a key the app uses fixtures.
+- Paste your own OpenRouter key in Developer settings (this tab only, `sessionStorage`, sent as `x-openrouter-key`). It is never written to disk or logged.
+- Shared server key (if you set `OPENROUTER_API_KEY` on the host): **4 live runs per IP per hour**.
+- Visitor key: **12 live runs per IP per hour**.
+- Candidate prompt capped at 8,000 characters.
+
+Do **not** put a personal `OPENROUTER_API_KEY` on a public Vercel project. Leave it unset so visitors see demo mode unless they paste their own key.
+
+**HITL on serverless:** the checkpointer is in-memory (`MemorySaver`). A Ship/Revert after a cold start may miss the paused thread — run locally for a reliable gate, or swap the checkpointer for Postgres/SQLite. Hobby Vercel functions time out at 60s.
+
+**OpenRouter guardrail (optional, recommended):** at openrouter.ai → Settings → Privacy → Guardrails create a guardrail, enable *Security → prompt injection* (Block or Redact), and assign it to the key. PromptCanary probes it on every candidate (one tiny request); `OPENROUTER_GUARDRAIL_PROBE=false` disables the probe.
+
+### LangSmith observability
 
 Uncomment the `LANGSMITH_*` block in `.env.local` (key from
 [smith.langchain.com](https://smith.langchain.com)) and restart. The dev
@@ -108,19 +89,10 @@ graph (`load_change → run_traces → run_evals → analyze → gate`), each
 baseline/candidate model call, every judge call with its structured scores,
 and the analyst's tool-calling loop. Resuming the gate produces a
 `canary-decision` trace tagged with the human's decision, so a shipped
-override is auditable end to end. Traces carry the `threadId`, model and
-demo-mode flag as metadata; runs are flushed to LangSmith before the API
-route returns, so nothing is lost on serverless deploys.
+override is auditable end to end.
 
-The outcome is also logged as LangSmith **feedback**: `verdict` (score 1 =
-pass, 0 = fail, with the regressed case ids) plus mean candidate
-`faithfulness`/`correctness` on every `canary-run`, and `human_decision`
-(ship / override / revert, including guard refusals) on every
-`canary-decision`, and `prompt_safety` (1 = clean, 0 = flagged, with the
-findings as the comment) on every `canary-run`. That makes failed runs,
-flagged prompts and override ships filterable
-and chartable in LangSmith Monitoring instead of buried inside trace
-payloads.
+The outcome is also logged as LangSmith **feedback**: `verdict`, mean candidate
+`faithfulness`/`correctness`, `human_decision`, and `prompt_safety`.
 
 | The full graph as one trace | The judge catching the regression |
 |---|---|
@@ -130,15 +102,9 @@ payloads.
 |---|---|
 | ![verdict and score feedback on a canary-run](docs/langsmith-feedback.png) | ![canary-decision resuming the gate into do_revert](docs/langsmith-decision.png) |
 
-A model A/B run in the same trace view: the graph state carries `baselineModel` next to `model`, and the calls under `run_traces` alternate between the two — baseline answers on `openai/gpt-4.1-mini`, candidate answers on `anthropic/claude-haiku-4.5`. The root run's metadata records `baselineModel` and `modelAB: true`, so model-swap runs are filterable like any other slice.
-
 ![model A/B trace — baselineModel and model in the graph state, alternating model chips under run_traces](docs/langsmith-model-ab.png)
 
-Because verdict, faithfulness, correctness and prompt_safety are logged as run-level **feedback**, quality is chartable over time — LangSmith's Monitoring → Feedback Scores tab does this natively. The chart below is rendered from the same feedback via the LangSmith API across 37 real canary runs: the lines stay pinned at 1.0 except on the runs that genuinely regressed, and the strip shows each run's pass/fail verdict.
-
 ![quality over time — candidate faithfulness and correctness per canary run, with the pass/fail verdict strip, from LangSmith feedback](docs/langsmith-monitoring.svg)
-
-**Submission repo:** push this project to [TuringCollegeSubmissions/gaurat-AE.AFA.4.6](https://github.com/TuringCollegeSubmissions/gaurat-AE.AFA.4.6).
 
 ## Use cases
 
@@ -148,18 +114,14 @@ Because verdict, faithfulness, correctness and prompt_safety are logged as run-l
 
 ## Technical decisions
 
-- **Forced graph over a free agent:** evals must run every time; the model is never trusted to decide to eval itself. LangChain's prebuilt `create_agent` (ReAct loop) was considered and rejected for the pipeline: `graph.ts` is a deterministic gate with an `interrupt`, not a tool loop, and the one place a real tool loop exists — the analyst — already uses `bindTools` with the enabled read-only tools.
-- **Prompt screen is unit-tested, not just demoed:** `pnpm test` runs table-driven cases over every lint rule (including legitimate support text that must *not* be flagged), the OpenRouter guardrail probe parser against the documented 403/redact shapes, and the gate's decision guard for every ship/override/revert/tool-flag combination.
-- **React Compiler, no hand memoization:** `reactCompiler: true` in `next.config.ts`; the components carry no `useMemo`/`useCallback`.
+- **Forced graph over a free agent:** evals must run every time; the model is never trusted to decide to eval itself.
+- **Prompt screen is unit-tested, not just demoed:** `pnpm test` runs table-driven cases over every lint rule, the OpenRouter guardrail probe parser, and the gate's decision guard.
+- **React Compiler, no hand memoization:** `reactCompiler: true` in `next.config.ts`.
 - **Fail closed everywhere:** empty golden set, missing traces, disabled `run_evals`, judge/API errors — every one aborts the run instead of green-lighting it.
-- **`MemorySaver` checkpointer** keeps this a single-process dev tool; swap for a Postgres/SQLite checkpointer to deploy serverless.
-- **Demo mode** (no API key) exercises the identical graph with deterministic fixtures — the planted regression degrades exactly the way an ungrounded prompt degrades in real runs.
+- **`MemorySaver` checkpointer** keeps this a single-process tool; swap for a Postgres/SQLite checkpointer to deploy HITL reliably on serverless.
+- **Demo mode** (no API key) exercises the identical graph with deterministic fixtures.
 
 ## What this is not
 
 - Not a replacement for Cursor.
-- Not AuditReady. The capstone reuses the **gate pattern**, not this repo.
-
-## Spec
-
-Intra assignment text: [`135.md`](135.md).
+- Not a production eval platform. It is a forced-path canary you can point at your own golden set.
